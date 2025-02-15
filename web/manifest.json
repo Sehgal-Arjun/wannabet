@@ -1,6 +1,6 @@
 {
-    "name": "wanna_bet",
-    "short_name": "wanna_bet",
+    "name": "wannabet",
+    "short_name": "wannabet",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

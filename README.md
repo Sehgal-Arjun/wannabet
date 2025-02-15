@@ -1,1 +1,3 @@
-# WannaBet
+# wannabet
+
+A new Flutter project.

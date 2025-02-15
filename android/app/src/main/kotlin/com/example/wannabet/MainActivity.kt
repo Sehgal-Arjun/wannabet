@@ -1,4 +1,4 @@
-package com.example.wanna_bet
+package com.example.wannabet
 
 import io.flutter.embedding.android.FlutterActivity
 
