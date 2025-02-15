@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:wanna_bet/login.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -71,8 +72,12 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(height: 16),
               Center(
                 child: TextButton(
-                  onPressed: () {},
-                  child: Text("Already have an account? Log in",
+                    onPressed: () {
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                    },
+                  child: Text("Already have an account?",
                       style: GoogleFonts.lato(color: Color(0xFF5e548e))),
                 ),
               ),
