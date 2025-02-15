@@ -1,15 +1,16 @@
-name: wanna_bet
+name: wannabet
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.1.0
 
 environment:
-  sdk: ^3.6.2
+  sdk: ^3.7.0
 
 dependencies:
   flutter:
     sdk: flutter
-  # firebase_auth: ^5.4.2
+  firebase_auth: ^5.4.2
+  firebase_core: ^3.11.0
   smooth_page_indicator: ^1.2.0+3
   lottie: ^3.3.1
   google_fonts: ^6.2.1

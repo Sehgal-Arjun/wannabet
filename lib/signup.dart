@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-import 'package:wanna_bet/login.dart';
+import 'package:wannabet/login.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -34,54 +33,56 @@ class _SignUpPageState extends State<SignUpPage> {
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Lottie.asset(
-                'assets/signUpAnimation.json',
-                width: MediaQuery.of(context).size.width / 1.25,
-                height: MediaQuery.of(context).size.width / 1.25,
-              ),
-              const SizedBox(height: 24),
-              Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    _buildTextField(Icons.mail_outline, "Email"),
-                    const SizedBox(height: 16),
-                    _buildTextField(Icons.lock_outline, "Password", isPassword: true),
-                    const SizedBox(height: 16),
-                    _buildTextField(Icons.lock_outline, "Confirm Password", isPassword: true),
-                  ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Lottie.asset(
+                  'assets/signUpAnimation.json',
+                  width: MediaQuery.of(context).size.width / 1.25,
+                  height: MediaQuery.of(context).size.width / 1.25,
                 ),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF5e548e),
-                  foregroundColor: Colors.white,
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 24),
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      _buildTextField(Icons.mail_outline, "Email"),
+                      const SizedBox(height: 16),
+                      _buildTextField(Icons.lock_outline, "Password", isPassword: true),
+                      const SizedBox(height: 16),
+                      _buildTextField(Icons.lock_outline, "Confirm Password", isPassword: true),
+                    ],
                   ),
                 ),
-                onPressed: () {},
-                child: Text("Create Account", style: GoogleFonts.lato(fontSize: 18)),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context) => LoginPage()),
-                      );
-                    },
-                  child: Text("Already have an account?",
-                      style: GoogleFonts.lato(color: Color(0xFF5e548e))),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF5e548e),
+                    foregroundColor: Colors.white,
+                    minimumSize: Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: () {},
+                  child: Text("Create Account", style: GoogleFonts.lato(fontSize: 18)),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                Center(
+                  child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => LoginPage()),
+                        );
+                      },
+                    child: Text("Already have an account?",
+                        style: GoogleFonts.lato(color: Color(0xFF5e548e))),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
