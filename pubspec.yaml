@@ -30,3 +30,4 @@ flutter:
     - assets/animation2.json
     - assets/animation3.json
     - assets/signUpAnimation.json
+    - assets/logInAnimation.json
