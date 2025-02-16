@@ -89,8 +89,8 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Firebase: a64bf6a8546e6eab54f1c715cd6151f39d2329f4
-  firebase_auth: bcc25c2992fb3e655b59faca6f0f5bc9215d463d
-  firebase_core: aa979ae726f00b3ef4ccf59dfb96170af84efbd4
+  firebase_auth: a1aa0a20e8de111be5b9a5a2ba73201877f9f53d
+  firebase_core: 3d36094af9b47c46bfb965943413a39eebaca4db
   FirebaseAppCheckInterop: 7bf86d55a2b7e9bd91464120eba3e52e4b63b2e2
   FirebaseAuth: 77e25aa24f3e1c626c5babd3338551fc1669ee0e
   FirebaseAuthInterop: 651756e70d9a0b9160db39ead71fd5507dbb6c84
@@ -100,9 +100,9 @@ SPEC CHECKSUMS:
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
   GTMSessionFetcher: 257ead9ba8e15a2d389d79496e02b9cc5dd0c62c
-  path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
+  path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   RecaptchaInterop: 7d1a4a01a6b2cb1610a47ef3f85f0c411434cb21
 
 PODFILE CHECKSUM: ba0d7af98d1a0db7cbf744edd0331fd4de934cd6
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
