@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:wannabet/home.dart';
+import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
