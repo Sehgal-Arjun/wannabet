@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import 'package:wannabet/home.dart';
 import 'package:wannabet/signup.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -12,6 +14,32 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
+
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+
+  Future<void> signIn() async {
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _email.text.trim(),
+        password: _password.text.trim(),
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to sign in: ${e.toString()}")),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _email.dispose();
+    _password.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,9 +71,9 @@ class _LoginPageState extends State<LoginPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      _buildTextField(Icons.mail_outline, "Email"),
+                      _buildTextField(Icons.mail_outline, "Email", _email),
                       const SizedBox(height: 16),
-                      _buildTextField(Icons.lock_outline, "Password", isPassword: true),
+                      _buildTextField(Icons.lock_outline, "Password", _password, isPassword: true),
                     ],
                   ),
                 ),
@@ -59,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: signIn,
                   child: Text("Sign in", style: GoogleFonts.lato(fontSize: 18)),
                 ),
                 const SizedBox(height: 16),
@@ -82,8 +110,9 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildTextField(IconData icon, String hintText, {bool isPassword = false}) {
+  Widget _buildTextField(IconData icon, String hintText, TextEditingController controllername, {bool isPassword = false}) {
     return TextField(
+      controller: controllername,
       obscureText: isPassword,
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Color(0xFF9f86c0)),
