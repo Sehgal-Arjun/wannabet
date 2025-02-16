@@ -21,7 +21,7 @@ class _HomePageState extends State<HomePage> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to sign in: ${e.toString()}")),
+        SnackBar(content: Text("Failed to sign out: ${e.toString()}")),
       );
     }
   }

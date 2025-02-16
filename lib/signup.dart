@@ -31,7 +31,7 @@ class _SignUpPageState extends State<SignUpPage> {
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to sign in: ${e.toString()}")),
+        SnackBar(content: Text("Failed to sign up: ${e.toString()}")),
       );
     }
     } else {
