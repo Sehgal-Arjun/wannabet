@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:wannabet/intro.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,6 +13,19 @@ class _HomePageState extends State<HomePage> {
 
   final user = FirebaseAuth.instance.currentUser!;
 
+  void signOut() async{
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => IntroPage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to sign in: ${e.toString()}")),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -20,7 +34,7 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Welcome ${user.email}'),
-            MaterialButton(onPressed: () async { await FirebaseAuth.instance.signOut(); }, child: Text('Sign out'))
+            MaterialButton(onPressed: signOut, child: Text('Sign Out'))
           ],
         ),
       ),
