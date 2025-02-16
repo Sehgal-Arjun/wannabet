@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:wannabet/home.dart';
+import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/login.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -27,7 +27,7 @@ class _SignUpPageState extends State<SignUpPage> {
         password: _password.text.trim(),
       );
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomePage()),
+        MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
