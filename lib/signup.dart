@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import 'package:wannabet/home.dart';
 import 'package:wannabet/login.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -12,6 +14,32 @@ class SignUpPage extends StatefulWidget {
 
 class _SignUpPageState extends State<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
+
+  final _email = TextEditingController();
+  final _password = TextEditingController();
+  final _confirmPassword = TextEditingController();
+
+  void signUp() async {
+    if (_password.text.trim() == _confirmPassword.text.trim()) {
+      try {
+      await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _email.text.trim(),
+        password: _password.text.trim(),
+      );
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => HomePage()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to sign in: ${e.toString()}")),
+      );
+    }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Passwords do not match")),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +76,11 @@ class _SignUpPageState extends State<SignUpPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      _buildTextField(Icons.mail_outline, "Email"),
+                      _buildTextField(Icons.mail_outline, "Email", _email),
                       const SizedBox(height: 16),
-                      _buildTextField(Icons.lock_outline, "Password", isPassword: true),
+                      _buildTextField(Icons.lock_outline, "Password", _password, isPassword: true),
                       const SizedBox(height: 16),
-                      _buildTextField(Icons.lock_outline, "Confirm Password", isPassword: true),
+                      _buildTextField(Icons.lock_outline, "Confirm Password", _confirmPassword, isPassword: true),
                     ],
                   ),
                 ),
@@ -66,7 +94,7 @@ class _SignUpPageState extends State<SignUpPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () {},
+                  onPressed: signUp,
                   child: Text("Create Account", style: GoogleFonts.lato(fontSize: 18)),
                 ),
                 const SizedBox(height: 16),
@@ -89,8 +117,9 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Widget _buildTextField(IconData icon, String hintText, {bool isPassword = false}) {
+  Widget _buildTextField(IconData icon, String hintText, TextEditingController controllerName, {bool isPassword = false}) {
     return TextField(
+      controller: controllerName,
       obscureText: isPassword,
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Color(0xFF9f86c0)),
