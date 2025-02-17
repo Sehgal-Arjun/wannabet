@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/login.dart';
+import 'package:wannabet/signup/name_and_username.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -22,18 +24,36 @@ class _SignUpPageState extends State<SignUpPage> {
   void signUp() async {
     if (_password.text.trim() == _confirmPassword.text.trim()) {
       try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _email.text.trim(),
-        password: _password.text.trim(),
-      );
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomePage()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to sign up: ${e.toString()}")),
-      );
-    }
+        UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _email.text.trim(),
+          password: _password.text.trim(),
+        );
+
+        String userID = userCredential.user!.uid;
+        String userEmail = userCredential.user!.email!;
+
+        await FirebaseFirestore.instance.collection('users').doc(userID).set({
+          "first_name": null,
+          "last_name": null,
+          "full_name": null,
+          "username": null,
+          "email": userEmail,
+          "profile_picture": null,
+          "friends": [],
+          "pinned_bets": [],
+          "total_money_won": 0.0,
+          "total_bets": 0
+        });
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => NameAndUsernamePage()),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to sign up: ${e.toString()}")),
+        );
+        print(e);
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Passwords do not match")),

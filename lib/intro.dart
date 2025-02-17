@@ -3,7 +3,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:wannabet/intro/introPage1.dart';
 import 'package:wannabet/intro/introPage2.dart';
 import 'package:wannabet/intro/introPage3.dart';
-import 'package:wannabet/signup.dart';
+import 'package:wannabet/signup/signup.dart';
 
 class IntroPage extends StatefulWidget {
   const IntroPage({super.key});
@@ -60,7 +60,7 @@ class _IntroPageState extends State<IntroPage> {
                 onTap:() => 
                   onLastPage?
                     Navigator.push(context, MaterialPageRoute(builder: (context) { return SignUpPage(); })) : 
-                    _controller.nextPage(duration: Duration(milliseconds: 500), curve: Curves.easeIn),
+                    _controller.nextPage(duration: Duration(milliseconds: 150), curve: Curves.easeIn),
               ),
             ),
           )
