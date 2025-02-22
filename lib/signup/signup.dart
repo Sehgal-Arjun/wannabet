@@ -6,6 +6,7 @@ import 'package:lottie/lottie.dart';
 import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/login.dart';
 import 'package:wannabet/signup/name_and_username.dart';
+import 'package:wannabet/widgets/custom_text_field.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -40,6 +41,7 @@ class _SignUpPageState extends State<SignUpPage> {
           "email": userEmail,
           "profile_picture": null,
           "friends": [],
+          "friend_requests": [],
           "pinned_bets": [],
           "total_money_won": 0.0,
           "total_bets": 0
@@ -96,11 +98,11 @@ class _SignUpPageState extends State<SignUpPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      _buildTextField(Icons.mail_outline, "Email", _email),
+                      buildTextField(Icons.mail_outline, "Email", _email),
                       const SizedBox(height: 16),
-                      _buildTextField(Icons.lock_outline, "Password", _password, isPassword: true),
+                      buildTextField(Icons.lock_outline, "Password", _password, isPassword: true),
                       const SizedBox(height: 16),
-                      _buildTextField(Icons.lock_outline, "Confirm Password", _confirmPassword, isPassword: true),
+                      buildTextField(Icons.lock_outline, "Confirm Password", _confirmPassword, isPassword: true),
                     ],
                   ),
                 ),
@@ -132,26 +134,6 @@ class _SignUpPageState extends State<SignUpPage> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(IconData icon, String hintText, TextEditingController controllerName, {bool isPassword = false}) {
-    return TextField(
-      controller: controllerName,
-      obscureText: isPassword,
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Color(0xFF9f86c0)),
-        hintText: hintText,
-        hintStyle: GoogleFonts.lato(color: Colors.grey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF9f86c0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF5e548e)),
         ),
       ),
     );

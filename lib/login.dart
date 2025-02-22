@@ -4,6 +4,7 @@ import 'package:lottie/lottie.dart';
 import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/signup/signup.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:wannabet/widgets/custom_text_field.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -90,9 +91,9 @@ class _LoginPageState extends State<LoginPage> {
                   key: _formKey,
                   child: Column(
                     children: [
-                      _buildTextField(Icons.mail_outline, "Email", _email),
+                      buildTextField(Icons.mail_outline, "Email", _email),
                       const SizedBox(height: 16),
-                      _buildTextField(Icons.lock_outline, "Password", _password, isPassword: true),
+                      buildTextField(Icons.lock_outline, "Password", _password, isPassword: true),
                     ],
                   ),
                 ),
@@ -135,26 +136,6 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextField(IconData icon, String hintText, TextEditingController controllername, {bool isPassword = false}) {
-    return TextField(
-      controller: controllername,
-      obscureText: isPassword,
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Color(0xFF9f86c0)),
-        hintText: hintText,
-        hintStyle: GoogleFonts.lato(color: Colors.grey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF9f86c0)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Color(0xFF5e548e)),
         ),
       ),
     );

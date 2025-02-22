@@ -21,13 +21,13 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor: Color(0xFFFEF8FF),
+        scaffoldBackgroundColor: Colors.white, // Used to be Color(0xFFFEF8FF)
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFFFEF8FF),
+          backgroundColor: Colors.white, // Used to be Color(0xFFFEF8FF)
           elevation: 0,
         ),
         navigationBarTheme: const NavigationBarThemeData(
-          backgroundColor: Color(0xFFFEF8FF),
+          backgroundColor: Colors.white, // Used to be Color(0xFFFEF8FF)
           elevation: 0,
         ),
       ),

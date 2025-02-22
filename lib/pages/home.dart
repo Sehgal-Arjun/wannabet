@@ -25,19 +25,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void signOut() async{
-    try {
-      await FirebaseAuth.instance.signOut();
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => IntroPage()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to sign out: ${e.toString()}")),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -51,11 +38,6 @@ class _HomePageState extends State<HomePage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Welcome, ${user.email}'),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: signOut,
-              child: Text('Sign Out'),
-            ),
           ],
         ),
       ),
