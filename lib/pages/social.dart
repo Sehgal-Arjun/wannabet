@@ -165,8 +165,8 @@ class _SocialPageState extends State<SocialPage> {
                     controller: friendsController, 
                     count: pageCount,
                     effect: ExpandingDotsEffect(
-                      dotWidth: 10,
-                      dotHeight: 10,
+                      dotWidth: 8,
+                      dotHeight: 8,
                       activeDotColor: Color(0xff5e548e),
                       dotColor: const Color.fromARGB(255, 206, 206, 206)
                     ),

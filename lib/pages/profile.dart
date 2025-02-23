@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:wannabet/intro.dart';
 import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/pages/new_bet.dart';
@@ -9,6 +10,7 @@ import 'package:wannabet/pages/stats.dart';
 import 'package:wannabet/widgets/custom_card.dart';
 import 'package:wannabet/widgets/loading_page.dart';
 import 'package:wannabet/widgets/navbar.dart';
+import 'package:wannabet/widgets/profile_picture.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -79,47 +81,32 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CustomCard(
-                    child: Row(
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: Colors.grey[300],
-                          backgroundImage: NetworkImage(profilePicture),
-                          child: Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                            color: Color(0xff231942),
-                            width: 1.0,
-                            ),
-                          ),
-                          ),
+                        ProfilePicture(
+                          profilePicture: profilePicture,
+                          profile: true,
                         ),
-                        const SizedBox(width: 16),
+                        const SizedBox(height: 12),
                         Text(
                           "@$username",
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                          style: GoogleFonts.lato(fontSize: 18, fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
-                  CustomCard(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         Text(
-                          "Hi, $firstName!",
-                          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
                           "${totalMoneyWon >= 0 ? "+\$" : "-\$"}${totalMoneyWon.abs().toStringAsFixed(2)}",
-                          style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: moneyColor),
+                          style: GoogleFonts.lato(fontSize: 26, fontWeight: FontWeight.bold, color: moneyColor),
                         ),
                       ]
                     ),
-                  ),
                   const SizedBox(height: 10),
                   
                 ],

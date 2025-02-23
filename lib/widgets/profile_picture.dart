@@ -4,17 +4,19 @@ import 'package:wannabet/pages/view_profile.dart';
 class ProfilePicture extends StatelessWidget {
   final String? profilePicture;
   final bool? searched;
+  final bool? profile;
 
   const ProfilePicture({
     super.key,
     this.profilePicture,
-    this.searched
+    this.searched,
+    this.profile
   });
 
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-      radius: MediaQuery.of(context).size.width / (searched == true ? 20 : 12),
+      radius: MediaQuery.of(context).size.width / (profile == true ? 6 : (searched == true ? 20 : 12)),
       backgroundColor: Colors.grey[300],
       backgroundImage: profilePicture != null 
           ? NetworkImage(profilePicture!) 
