@@ -3,10 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 
 Widget buildTextField(
     IconData icon, String hintText, TextEditingController controllername,
-    {bool isPassword = false}) {
+    {bool isPassword = false, Function(String)? onChanged}) {
   return TextField(
     controller: controllername,
     obscureText: isPassword,
+    onChanged: onChanged,
     decoration: InputDecoration(
       prefixIcon: Icon(icon, color: const Color(0xFF9f86c0)),
       hintText: hintText,

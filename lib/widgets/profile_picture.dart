@@ -17,7 +17,7 @@ class ProfilePicture extends StatelessWidget {
         );
       },
       child: CircleAvatar(
-        radius: MediaQuery.of(context).size.width/8,
+        radius: MediaQuery.of(context).size.width / 12,
         backgroundColor: Colors.grey[300],
         backgroundImage: NetworkImage("http://www.gravatar.com/avatar/?d=mp"),
         child: Container(
