@@ -44,7 +44,8 @@ class _SignUpPageState extends State<SignUpPage> {
           "friend_requests": [],
           "pinned_bets": [],
           "total_money_won": 0.0,
-          "total_bets": 0
+          "total_bets": 0,
+          "id": userID,
         });
 
         Navigator.of(context).pushReplacement(

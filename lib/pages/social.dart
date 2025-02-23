@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:wannabet/pages/stats.dart';
+import 'package:wannabet/pages/view_profile.dart';
 import 'package:wannabet/widgets/custom_text_field.dart';
 import 'package:wannabet/widgets/loading_page.dart';
 import 'package:wannabet/widgets/navbar.dart';
@@ -22,7 +23,7 @@ class _SocialPageState extends State<SocialPage> {
   final _searchController = TextEditingController();
   final friendsController = PageController(viewportFraction: 1, keepPage: true, initialPage: 0);
   final pageCount = 2;
-  List<String> searchResults = []; // To hold search results
+  List<Map<String, String>> searchResults = []; // To hold search results
 
   void _onItemTapped(int index) {
     setState(() {
@@ -46,7 +47,11 @@ class _SocialPageState extends State<SocialPage> {
         .get();
 
     setState(() {
-      searchResults = results.docs.map((doc) => doc['username'] as String).toList();
+      searchResults = results.docs.map((doc) => {
+      'username': doc['username'] as String,
+      'profile_picture': doc['profile_picture'] as String,
+      'id': doc['id'] as String,
+      }).toList();
     });
   }
 
@@ -82,6 +87,7 @@ class _SocialPageState extends State<SocialPage> {
                   onChanged: (value) {
                     searchUsernames(value); // Call search method on text change
                   },
+                  clearable: true
                 ),
               ),
 
@@ -92,9 +98,17 @@ class _SocialPageState extends State<SocialPage> {
                     itemCount: searchResults.length,
                     itemBuilder: (context, index) {
                       return ListTile(
-                        title: Text('@${searchResults[index]}'),
+                        leading: ProfilePicture(profilePicture: searchResults[index]['profile_picture']!, searched: true,),
+                        title: Text(searchResults[index]['username']!),
                         onTap: () {
-                          // Handle tap on username (e.g., navigate to profile)
+                          String userUsername = searchResults[index]['username']!;
+                          String userUid = searchResults[index]['id']!;
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ViewProfile(username: userUsername, uid:userUid),
+                            ),
+                          );
                         },
                       );
                     },
@@ -102,6 +116,7 @@ class _SocialPageState extends State<SocialPage> {
                 ),
 
               // Friends section
+              if (searchResults.isEmpty) 
               Column(
                 children: [
                   Container(

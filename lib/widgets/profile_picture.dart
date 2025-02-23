@@ -2,25 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:wannabet/pages/view_profile.dart';
 
 class ProfilePicture extends StatelessWidget {
+  final String? profilePicture;
+  final bool? searched;
 
   const ProfilePicture({
     super.key,
+    this.profilePicture,
+    this.searched
   });
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ViewProfile()),
-        );
-      },
-      child: CircleAvatar(
-        radius: MediaQuery.of(context).size.width / 12,
-        backgroundColor: Colors.grey[300],
-        backgroundImage: NetworkImage("http://www.gravatar.com/avatar/?d=mp"),
-        child: Container(
+    return CircleAvatar(
+      radius: MediaQuery.of(context).size.width / (searched == true ? 20 : 12),
+      backgroundColor: Colors.grey[300],
+      backgroundImage: profilePicture != null 
+          ? NetworkImage(profilePicture!) 
+          : NetworkImage("http://www.gravatar.com/avatar/?d=mp"),
+      child: Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           border: Border.all(
@@ -28,8 +27,8 @@ class ProfilePicture extends StatelessWidget {
           width: 1.0,
           ),
         ),
-        ),
       ),
     );
   }
 }
+
