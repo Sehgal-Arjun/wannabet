@@ -6,6 +6,8 @@ import 'package:wannabet/pages/social.dart';
 import 'package:wannabet/pages/profile.dart';
 
 class StatsPage extends StatefulWidget {
+  const StatsPage({super.key});
+
   @override
   _StatsPageState createState() => _StatsPageState();
 }

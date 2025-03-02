@@ -14,6 +14,8 @@ import 'package:wannabet/widgets/profile_picture.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SocialPage extends StatefulWidget {
+  const SocialPage({super.key});
+
   @override
   _SocialPageState createState() => _SocialPageState();
 }
@@ -43,7 +45,7 @@ class _SocialPageState extends State<SocialPage> {
     final results = await FirebaseFirestore.instance
         .collection('users')
         .where('username', isGreaterThanOrEqualTo: query)
-        .where('username', isLessThanOrEqualTo: query + '\uf8ff') // To match the query
+        .where('username', isLessThanOrEqualTo: '$query\uf8ff') // To match the query
         .get();
 
     setState(() {
@@ -119,7 +121,7 @@ class _SocialPageState extends State<SocialPage> {
               if (searchResults.isEmpty) 
               Column(
                 children: [
-                  Container(
+                  SizedBox(
                     height: 200,
                     child: PageView.builder(
                       controller: friendsController,

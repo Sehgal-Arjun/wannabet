@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:wannabet/pages/view_profile.dart';
 
 class ProfilePicture extends StatelessWidget {
   final String? profilePicture;

@@ -3,7 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
-import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/login.dart';
 import 'package:wannabet/signup/name_and_username.dart';
 import 'package:wannabet/widgets/custom_text_field.dart';
