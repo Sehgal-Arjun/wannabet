@@ -33,27 +33,33 @@ class _SocialPageState extends State<SocialPage> {
 
   // Method to search for usernames
   Future<void> searchUsernames(String query) async {
-    if (query.isEmpty) {
-      setState(() {
-        searchResults = [];
-      });
-      return;
-    }
-
-    final results = await FirebaseFirestore.instance
-        .collection('users')
-        .where('username_lowercase', isGreaterThanOrEqualTo: query.toLowerCase())
-        .where('username_lowercase', isLessThanOrEqualTo: query.toLowerCase() + '\uf8ff') // To match the query
-        .get();
-
+  if (query.isEmpty) {
     setState(() {
-      searchResults = results.docs.map((doc) => {
-      'username': doc['username'] as String,
-      'profile_picture': doc['profile_picture'] as String,
-      'id': doc['id'] as String,
-      }).toList();
+      searchResults = [];
     });
+    return;
   }
+
+  String currentUserId = FirebaseAuth.instance.currentUser!.uid;
+
+  final results = await FirebaseFirestore.instance
+      .collection('users')
+      .where('username_lowercase', isGreaterThanOrEqualTo: query.toLowerCase())
+      .where('username_lowercase', isLessThanOrEqualTo: query.toLowerCase() + '\uf8ff')
+      .get();
+
+  setState(() {
+    searchResults = results.docs
+        .where((doc) => doc.id != currentUserId) // Do not show the user their own profile in search results
+        .map((doc) => {
+          'username': doc['username'] as String,
+          'profile_picture': doc['profile_picture'] as String,
+          'id': doc.id,
+        })
+        .toList();
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
