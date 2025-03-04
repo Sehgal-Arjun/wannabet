@@ -59,7 +59,7 @@ class _ViewProfileState extends State<ViewProfile> {
       future: fetchUserEmail(),
        builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data == null) {
-          return LoadingPage(selectedIndex: 0, title: 'Social');
+          return LoadingPage(user: [], selectedIndex: 0, title: 'Social');
         }
 
         return Scaffold(

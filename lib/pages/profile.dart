@@ -7,6 +7,7 @@ import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/pages/new_bet.dart';
 import 'package:wannabet/pages/social.dart';
 import 'package:wannabet/pages/stats.dart';
+import 'package:wannabet/widgets/custom_card.dart';
 import 'package:wannabet/widgets/loading_page.dart';
 import 'package:wannabet/widgets/navbar.dart';
 import 'package:wannabet/widgets/profile_picture.dart';
@@ -15,13 +16,16 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 
 class ProfilePage extends StatefulWidget {
-  const ProfilePage({super.key});
+  final user;
+  const ProfilePage({super.key, required this.user});
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  get user => widget.user;
+
   int _selectedIndex = 4;
   final ImagePicker _picker = ImagePicker();
 
@@ -87,28 +91,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    User user = FirebaseAuth.instance.currentUser!;
-    return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || !snapshot.data!.exists) {
-          return LoadingPage(selectedIndex: _selectedIndex, title: 'Profile');
-        }
-
-        var userData = snapshot.data!;
-        Map<String, dynamic> data = userData.data() as Map<String, dynamic>;
-        
-        String username = data['username'] ?? 'unknown';
-        String firstName = data['first_name'] ?? 'User';
-        String lastName = data['last_name'] ?? '';
-        String email = data['email'] ?? user.email ?? '';
-        String profilePicture = data['profile_picture'] ?? "http://www.gravatar.com/avatar/?d=mp";
-        double totalMoneyWon = (data['total_money_won'] ?? 0).toDouble();
-        int totalBets = data['total_bets'] ?? 0;
-        int wonBets = data['won_bets'] ?? 0;
-        List<dynamic> friends = data['friends'] ?? [];
-
-        return Scaffold(
+    return Scaffold(
           appBar: AppBar(
             automaticallyImplyLeading: false,
             title: const Text("Profile", style: TextStyle(color: Colors.black)),
@@ -136,7 +119,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         Stack(
                           children: [
                             ProfilePicture(
-                              profilePicture: profilePicture,
+                              profilePicture: user.profile_picture,
                               profile: true,
                             ),
                             Positioned(
@@ -156,14 +139,14 @@ class _ProfilePageState extends State<ProfilePage> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          "@$username",
+                          "@${user.username}",
                           style: GoogleFonts.lato(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
-                          "$firstName $lastName",
+                          "${user.first_name} ${user.last_name}",
                           style: GoogleFonts.lato(
                             fontSize: 16,
                             color: Colors.grey[600],
@@ -179,11 +162,11 @@ class _ProfilePageState extends State<ProfilePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildStatColumn('Friends', friends.length.toString()),
+                        _buildStatColumn('Friends', user.friends.length.toString()),
                         _buildStatColumn('Win Rate', 
-                          "${totalBets > 0 ? ((wonBets / totalBets) * 100).toStringAsFixed(1) : '0'}%"
+                          "${user.total_bets > 0 ? ((user.wonBets / user.total_bets) * 100).toStringAsFixed(1) : '0'}%"
                         ),
-                        _buildStatColumn('Total Bets', totalBets.toString()),
+                        _buildStatColumn('Total Bets', user.total_bets.toString()),
                       ],
                     ),
                   ),
@@ -209,19 +192,19 @@ class _ProfilePageState extends State<ProfilePage> {
                                   ),
                                 ),
                                 Icon(
-                                  totalMoneyWon >= 0 ? Icons.trending_up : Icons.trending_down,
-                                  color: totalMoneyWon >= 0 ? Colors.green : Colors.red,
+                                  user.total_money_won >= 0 ? Icons.trending_up : Icons.trending_down,
+                                  color: user.total_money_won >= 0 ? Colors.green : Colors.red,
                                 ),
                               ],
                             ),
                             const SizedBox(height: 16),
                             Center(
                               child: Text(
-                                "${totalMoneyWon >= 0 ? '+' : '-'}\$${totalMoneyWon.abs().toStringAsFixed(2)}",
+                                "${user.total_money_won >= 0 ? '+' : '-'}\$${user.total_money_won.abs().toStringAsFixed(2)}",
                                 style: GoogleFonts.lato(
                                   fontSize: 36,
                                   fontWeight: FontWeight.bold,
-                                  color: totalMoneyWon >= 0 ? Colors.green : Colors.red,
+                                  color: user.total_money_won >= 0 ? Colors.green : Colors.red,
                                 ),
                               ),
                             ),
@@ -327,14 +310,13 @@ class _ProfilePageState extends State<ProfilePage> {
             onItemTapped: _onItemTapped,
             pages: [
               HomePage(),
-              NewBetPage(),
-              SocialPage(),
-              ProfilePage(),
+              StatsPage(user: user),
+              NewBetPage(user: user),
+              SocialPage(user: user),
+              ProfilePage(user: user),
             ],
           ),
         );
-      },
-    );
   }
 
   Widget _buildStatColumn(String label, String value) {
