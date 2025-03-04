@@ -7,6 +7,7 @@ import 'package:wannabet/pages/stats.dart';
 import 'package:wannabet/widgets/navbar.dart';
 
 class LoadingPage extends StatefulWidget {
+  final user;
   int selectedIndex;
   final String title;
 
@@ -14,6 +15,7 @@ class LoadingPage extends StatefulWidget {
     super.key,
     required this.selectedIndex,
     required this.title,
+    required this.user,
     });
 
   @override
@@ -21,6 +23,7 @@ class LoadingPage extends StatefulWidget {
 }
 
 class _LoadingPageState extends State<LoadingPage> {
+  get user => widget.user;
 
   void _onItemTapped(int index) {
       setState(() {
@@ -38,10 +41,10 @@ class _LoadingPageState extends State<LoadingPage> {
         onItemTapped: _onItemTapped,
         pages: [
           HomePage(),
-          StatsPage(),
-          NewBetPage(),
-          SocialPage(),
-          ProfilePage(),
+          StatsPage(user: user),
+          NewBetPage(user: user),
+          SocialPage(user: user),
+          ProfilePage(user: user),
         ],
       ),
     );

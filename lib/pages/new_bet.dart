@@ -6,7 +6,8 @@ import 'package:wannabet/pages/social.dart';
 import 'package:wannabet/pages/profile.dart';
 
 class NewBetPage extends StatefulWidget {
-  const NewBetPage({super.key});
+  final user;
+  const NewBetPage({super.key, required this.user});
 
   @override
   _NewBetPageState createState() => _NewBetPageState();
@@ -14,6 +15,8 @@ class NewBetPage extends StatefulWidget {
 
 class _NewBetPageState extends State<NewBetPage> {
   int _selectedIndex = 2;
+
+  get user => widget.user;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -38,10 +41,10 @@ class _NewBetPageState extends State<NewBetPage> {
         onItemTapped: _onItemTapped,
         pages: [
           HomePage(),
-          StatsPage(),
-          NewBetPage(),
-          SocialPage(),
-          ProfilePage(),
+          StatsPage(user: user),
+          NewBetPage(user: user),
+          SocialPage(user: user),
+          ProfilePage(user: user),
         ], // Pass the list of pages
       ),
     );

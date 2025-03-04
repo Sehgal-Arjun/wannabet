@@ -14,13 +14,16 @@ import 'package:wannabet/widgets/profile_picture.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SocialPage extends StatefulWidget {
-  const SocialPage({super.key});
+  final user;
+  const SocialPage({super.key, required this.user});
 
   @override
   _SocialPageState createState() => _SocialPageState();
 }
 
 class _SocialPageState extends State<SocialPage> {
+  get user => widget.user;
+
   int _selectedIndex = 3;
   final _searchController = TextEditingController();
   final friendsController = PageController(viewportFraction: 1, keepPage: true, initialPage: 0);
@@ -70,7 +73,7 @@ class _SocialPageState extends State<SocialPage> {
       future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
       builder: (context, snapshot) {
         if (!snapshot.hasData || !snapshot.data!.exists) {
-          return LoadingPage(selectedIndex: _selectedIndex, title: 'Social');
+          return LoadingPage(user:[], selectedIndex: _selectedIndex, title: 'Social');
         }
 
         var userData = snapshot.data!;
@@ -189,10 +192,10 @@ class _SocialPageState extends State<SocialPage> {
             onItemTapped: _onItemTapped,
             pages: [
               HomePage(),
-              StatsPage(),
-              NewBetPage(),
-              SocialPage(),
-              ProfilePage(),
+              StatsPage(user: user),
+              NewBetPage(user: user),
+              SocialPage(user: user),
+              ProfilePage(user: user),
             ],
           ),
         );
