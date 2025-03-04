@@ -45,6 +45,7 @@ class _SignUpPageState extends State<SignUpPage> {
           "total_money_won": 0.0,
           "total_bets": 0,
           "id": userID,
+          "username_lowercase": null,
         });
 
         Navigator.of(context).pushReplacement(
