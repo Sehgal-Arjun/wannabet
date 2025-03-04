@@ -7,7 +7,6 @@ import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/pages/new_bet.dart';
 import 'package:wannabet/pages/social.dart';
 import 'package:wannabet/pages/stats.dart';
-import 'package:wannabet/widgets/custom_card.dart';
 import 'package:wannabet/widgets/loading_page.dart';
 import 'package:wannabet/widgets/navbar.dart';
 import 'package:wannabet/widgets/profile_picture.dart';

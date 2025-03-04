@@ -1,9 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:wannabet/pages/home.dart';
-import 'package:wannabet/pages/new_bet.dart';
-import 'package:wannabet/pages/profile.dart';
-import 'package:wannabet/pages/social.dart';
-import 'package:wannabet/pages/stats.dart';
 
 class NavBar extends StatelessWidget {
   final int selectedIndex;

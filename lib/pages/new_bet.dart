@@ -6,6 +6,8 @@ import 'package:wannabet/pages/social.dart';
 import 'package:wannabet/pages/profile.dart';
 
 class NewBetPage extends StatefulWidget {
+  const NewBetPage({super.key});
+
   @override
   _NewBetPageState createState() => _NewBetPageState();
 }

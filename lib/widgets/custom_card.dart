@@ -11,8 +11,8 @@ class CustomCard extends StatelessWidget {
     this.elevation = 0.5,
     this.radius = 12.0,
     this.color = const Color(0xFFFFFFFF),
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
