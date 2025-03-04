@@ -27,6 +27,7 @@ class _NameAndUsernamePageState extends State<NameAndUsernamePage> {
       // Save name & username to Firestore
       await FirebaseFirestore.instance.collection('users').doc(userId).update({
         "username": _usernameController.text.trim(),
+        "username_lowercase": _usernameController.text.trim().toLowerCase(),
         "first_name": _firstNameController.text.trim(),
         "last_name": _lastNameController.text.trim(),
         "full_name": "${_firstNameController.text.trim()} ${_lastNameController.text.trim()}",

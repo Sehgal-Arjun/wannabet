@@ -42,8 +42,8 @@ class _SocialPageState extends State<SocialPage> {
 
     final results = await FirebaseFirestore.instance
         .collection('users')
-        .where('username', isGreaterThanOrEqualTo: query)
-        .where('username', isLessThanOrEqualTo: query + '\uf8ff') // To match the query
+        .where('username_lowercase', isGreaterThanOrEqualTo: query.toLowerCase())
+        .where('username_lowercase', isLessThanOrEqualTo: query.toLowerCase() + '\uf8ff') // To match the query
         .get();
 
     setState(() {
