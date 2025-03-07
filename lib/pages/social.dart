@@ -55,22 +55,22 @@ class _SocialPageState extends State<SocialPage> {
 
   setState(() {
     searchResults = results.docs
-        .where((doc) => doc.id != currentUserId) // Do not show the user their own profile in search results
-        .map((doc) => {
-          'username': doc['username'] as String,
-          'profile_picture': doc['profile_picture'] as String,
-          'id': doc.id,
-        })
-        .toList();
+      .where((doc) => doc.id != currentUserId) // Do not show the user their own profile in search results
+      .map((doc) => {
+        'username': doc['username'] as String,
+        'profile_picture': doc['profile_picture'] as String,
+        'id': doc.id,
+      })
+      .toList();
   });
 }
 
 
   @override
   Widget build(BuildContext context) {
-    User user = FirebaseAuth.instance.currentUser!;
+    User currentUser = FirebaseAuth.instance.currentUser!;
     return FutureBuilder(
-      future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
+      future: FirebaseFirestore.instance.collection('users').doc(currentUser.uid).get(),
       builder: (context, snapshot) {
         if (!snapshot.hasData || !snapshot.data!.exists) {
           return LoadingPage(user:[], selectedIndex: _selectedIndex, title: 'Social');
