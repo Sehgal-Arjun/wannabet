@@ -219,7 +219,7 @@ class _HomePageState extends State<HomePage> {
       fullName: userData['full_name'],
       username: userData['username'],
       friends: List<String>.from(userData['friends'] ?? []),
-      pinnedBets: List<String>.from(userData['pinnedBets'] ?? []),
+      pinnedBets: List<String>.from(userData['pinned_bets'] ?? []),
       total_money_won: userData['totalMoneyWon']?.toDouble() ?? 0.0,
       total_bets: userData['totalBets'] ?? 0,
       usernameLowercase: userData['usernameLowercase'],
