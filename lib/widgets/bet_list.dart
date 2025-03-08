@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wannabet/widgets/profile_group.dart';
 
 class BetList extends StatefulWidget {
   final String listTitle;
@@ -30,6 +32,31 @@ class _BetListState extends State<BetList> {
       setState(() {
         _isLoading = false; // Update loading state
       });
+    }
+  }
+
+  Future<Object> fetchProfilePictures(bet) async{
+    try {
+      List<String> sideOneProfilePictures = [];
+      List<String> sideTwoProfilePictures = [];
+      for (var sideOneMember in bet['side_one_members']) {
+        DocumentSnapshot sideOneUserBet = await FirebaseFirestore.instance.collection('userBets').doc(sideOneMember).get();
+        DocumentSnapshot sideOneUser = await FirebaseFirestore.instance.collection('users').doc(sideOneUserBet['user']).get();
+        sideOneProfilePictures.add(sideOneUser['profile_picture']);
+      }
+      for (var sideTwoMember in bet['side_two_members']) {
+        DocumentSnapshot sideTwoUserBet = await FirebaseFirestore.instance.collection('userBets').doc(sideTwoMember).get();
+        DocumentSnapshot sideTwoUser = await FirebaseFirestore.instance.collection('users').doc(sideTwoUserBet['user']).get();
+        sideTwoProfilePictures.add(sideTwoUser['profile_picture']);
+      }
+
+       return {
+        'sideOneProfilePictures': sideOneProfilePictures,
+        'sideTwoProfilePictures': sideTwoProfilePictures,
+      };
+    } catch (e) {
+      print("Error fetching pinned bets: $e");
+      return [];
     }
   }
 
@@ -98,72 +125,76 @@ class _BetListState extends State<BetList> {
           itemCount: betsList.length,
           itemBuilder: (context, index) {
             final bet = betsList[index];
-        
-            return Container(
-                padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
-                child: Column(
-                  children: [
-                    Row(
+            // Fetch profile pictures synchronously or handle loading state
+            return FutureBuilder(
+              future: fetchProfilePictures(bet),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator(); // Show loading indicator
+                } else if (snapshot.hasError) {
+                  return Text("Error: ${snapshot.error}"); // Handle error
+                } else {
+                  final profilePictures = snapshot.data; // Get profile pictures
+                  return Container(
+                    padding: const EdgeInsets.only(left: 12, right: 12, bottom: 12),
+                    child: Column(
                       children: [
-                        Expanded(
-                          child: Text(
-                            bet['bet_name'],
-                            style: GoogleFonts.lato(
-                              color: Colors.black,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                bet['bet_name'],
+                                style: GoogleFonts.lato(
+                                  color: Colors.black,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                                Text(
+                                  "\$${bet['side_one_value']}",
+                                  style: GoogleFonts.lato(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ProfileGroup(imageUrls: (profilePictures as Map<String, dynamic>)['sideOneProfilePictures']?.isNotEmpty ? (profilePictures)['sideOneProfilePictures'] : ["http://www.gravatar.com/avatar/?d=mp"]),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                SizedBox(width: MediaQuery.of(context).size.width * 0.1),
+                                Text(
+                                  "\$${bet['side_two_value']}",
+                                  style: GoogleFonts.lato(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                ProfileGroup(imageUrls: (profilePictures as Map<String, dynamic>)['sideTwoProfilePictures']?.isNotEmpty ? (profilePictures)['sideTwoProfilePictures'] : ["http://www.gravatar.com/avatar/?d=mp"]),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const Divider(),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                      Row(
-                        children: [
-                          SizedBox(width: MediaQuery.of(context).size.width * 0.1),
-                          Text(
-                            "\$${bet['side_one_value']}",
-                            style: GoogleFonts.lato(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          CircleAvatar(
-                            backgroundImage: NetworkImage("https://www.shutterstock.com/image-vector/man-character-face-avatar-glasses-600nw-542759665.jpg"),
-                            radius: 20,
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(width: MediaQuery.of(context).size.width * 0.18),
-                          const SizedBox(width: 8),
-                          CircleAvatar(
-                            backgroundImage: NetworkImage("https://static.vecteezy.com/system/resources/previews/020/389/525/non_2x/hand-drawing-cartoon-girl-cute-girl-drawing-for-profile-picture-vector.jpg"),
-                            radius: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            "\$${bet['side_two_value']}",
-                            style: GoogleFonts.lato(
-                            color: Colors.black,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(width: MediaQuery.of(context).size.width * 0.18),
-                        ],
-                      ),
-                      ],
-                    ),
-                    const Divider(),
-                  ],
-                ),
+                  );
+                }
+              },
             );
           },
         ),
