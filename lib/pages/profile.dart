@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:wannabet/intro.dart';
 import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/pages/new_bet.dart';
+import 'package:wannabet/pages/settings.dart';
 import 'package:wannabet/pages/social.dart';
 import 'package:wannabet/pages/stats.dart';
 import 'package:wannabet/widgets/bet_list.dart';
@@ -118,8 +119,12 @@ class _ProfilePageState extends State<ProfilePage> {
         title: const Text("Profile", style: TextStyle(color: Colors.black)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: signOut,
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) {
+                return SettingsPage(user: user);
+              }));
+            },
             color: Colors.black,
           ),
         ],
