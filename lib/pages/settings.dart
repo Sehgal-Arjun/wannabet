@@ -7,15 +7,13 @@ class SettingsPage extends StatefulWidget {
   SettingsPage({super.key, required this.user});
 
   @override
-
-  @override
   State<SettingsPage> createState() => _SettingsPageState();
 }
 
 class _SettingsPageState extends State<SettingsPage> {
   get user => widget.user;
 
-  void signOut() async{
+  void signOut() async {
     try {
       await FirebaseAuth.instance.signOut();
       Navigator.of(context).pushReplacement(
@@ -32,17 +30,167 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Settings'),
+        title: Text('Settings', style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.white,
+        elevation: 1,
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
+            icon: const Icon(Icons.logout, color: Colors.black),
             onPressed: signOut,
-            color: Colors.black,
           ),
         ],
       ),
-      body: Center(
-        child: Text('Settings Page'),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0), 
+        child: ListView(
+          children: [
+
+            GestureDetector(
+              onTap: () {
+     
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 3), // changes position of shadow
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                  leading: Icon(Icons.dark_mode, color: Colors.blueAccent),
+                  title: Text("Dark Mode", style: TextStyle(fontWeight: FontWeight.bold)),
+                  trailing: Switch(
+                    value: false, // Replace with your dark mode state
+                    onChanged: (value) {
+                    
+                    },
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 10), 
+
+  
+            GestureDetector(
+              onTap: () {
+       
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 3), 
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                  leading: Icon(Icons.notifications, color: Colors.blueAccent),
+                  title: Text("Notifications", style: TextStyle(fontWeight: FontWeight.bold)),
+                  trailing: Switch(
+                    value: true, 
+                    onChanged: (value) {
+                    
+                    },
+                  ),
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+
+
+            GestureDetector(
+              onTap: () {
+    
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                  leading: Icon(Icons.lock, color: Colors.blueAccent),
+                  title: Text("Change Password", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+            SizedBox(height: 10), 
+
+
+            GestureDetector(
+              onTap: () {
+    
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                  leading: Icon(Icons.help_outline, color: Colors.blueAccent),
+                  title: Text("Help", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+            SizedBox(height: 10), // 
+
+
+            GestureDetector(
+              onTap: () {
+            
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 3), // changes position of shadow
+                    ),
+                  ],
+                ),
+                child: ListTile(
+                  contentPadding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
+                  leading: Icon(Icons.privacy_tip, color: Colors.blueAccent),
+                  title: Text("Privacy", style: TextStyle(fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
