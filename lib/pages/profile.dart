@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:wannabet/intro.dart';
 import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/pages/new_bet.dart';
 import 'package:wannabet/pages/settings.dart';
@@ -63,18 +62,6 @@ class _ProfilePageState extends State<ProfilePage> {
         );
       }
     }
-  }
-
-  void _navigateToSettings() {
-   
-  }
-
-  void _navigateToPrivacy() {
-   
-  }
-
-  void _navigateToHelp() {
-   
   }
 
   Future<List<dynamic>> fetchPinnedBets() async {
