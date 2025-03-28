@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:wannabet/pages/stats.dart';
 import 'package:wannabet/pages/view_profile.dart';
@@ -125,9 +127,30 @@ class _SocialPageState extends State<SocialPage> {
                     },
                   ),
                 ),
+              
+              if (searchResults.isEmpty && _searchController.text.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 30),
+                      Lottie.asset(
+                        'assets/noSearchResultsAnimation.json',
+                        width: MediaQuery.of(context).size.width / 1.25,
+                        height: MediaQuery.of(context).size.width / 1.25,
+                      ),
+                      SizedBox(height: 30),
+                      Text(
+                        'No users found',
+                        style: GoogleFonts.lato(color: Colors.black, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                ),
 
               // Friends section
-              if (searchResults.isEmpty) 
+              if (searchResults.isEmpty && _searchController.text.isEmpty)
               Column(
                 children: [
                   SizedBox(
