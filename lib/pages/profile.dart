@@ -36,19 +36,6 @@ class _ProfilePageState extends State<ProfilePage> {
     });
   }
 
-  void signOut() async{
-    try {
-      await FirebaseAuth.instance.signOut();
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => IntroPage()),
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to sign out: ${e.toString()}")),
-      );
-    }
-  }
-
   Future<void> _editProfilePicture() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
@@ -283,44 +270,6 @@ class _ProfilePageState extends State<ProfilePage> {
                       ),
                       title: const Text("Chiefs vs Eagles"),
                       subtitle: const Text("Football • Won \$250"),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Settings & Help Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: CustomCard(
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.settings),
-                      title: const Text("Settings"),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        
-                      },
-                    ),
-                    const Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.security),
-                      title: const Text("Privacy"),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        
-                      },
-                    ),
-                    const Divider(),
-                    ListTile(
-                      leading: const Icon(Icons.help_outline),
-                      title: const Text("Help & Support"),
-                      trailing: const Icon(Icons.arrow_forward_ios),
-                      onTap: () {
-                        
-                      },
                     ),
                   ],
                 ),
