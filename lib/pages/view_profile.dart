@@ -8,8 +8,8 @@ import 'package:wannabet/widgets/profile_picture.dart';
 
 class ViewProfile extends StatefulWidget {
   final String uid;
-
-  const ViewProfile({super.key, required this.uid});
+  final user;
+  const ViewProfile({super.key, required this.uid, required this.user});
 
   @override
   State<ViewProfile> createState() => _ViewProfileState();
@@ -41,13 +41,13 @@ class _ViewProfileState extends State<ViewProfile> {
           return LoadingPage(user: [], selectedIndex: 0, title: 'Social');
         }
 
-        var user = snapshot.data!;
+        var account = snapshot.data!;
 
         Future<List<dynamic>> fetchPinnedBets() async {
           try {
             var fetchedBets = [];
 
-            for (String userBetId in user["pinnedBets"]) {
+            for (String userBetId in account["pinnedBets"]) {
               DocumentSnapshot userBetDoc = await FirebaseFirestore.instance.collection('userBets').doc(userBetId).get();
               if (userBetDoc.exists) {
                 String betId = userBetDoc["bet"];
@@ -64,7 +64,55 @@ class _ViewProfileState extends State<ViewProfile> {
           }
         }
 
+        Future sendFriendRequest() async {
+          try {
+            var currentUser = widget.user;
+            var friendId = account.id;
+
+            // Check if the user is already friends with the account
+            if (currentUser.friends.contains(friendId)) {
+              return;
+            }
+
+            // Check if the user has already received a friend request
+            if (currentUser.friend_requests.contains(friendId)) {
+              return;
+            }
+            // Check if the account has already received a friend request from the current user
+            for (var request in account["friend_requests"]) {
+              if (request["uid"] == currentUser.uid) {
+                return;
+              }
+            }
+
+            // Add the friend request to the account's receivedFriendRequests
+            await FirebaseFirestore.instance.collection('users').doc(friendId).update({
+              "friend_requests": FieldValue.arrayUnion([
+                {
+                  "uid": currentUser.uid,
+                  "profile_picture": currentUser.profile_picture,
+                  "full_name": currentUser.full_name,
+                  "username": currentUser.username,
+                }
+              ]),
+            });
+          } catch (e) {
+            print("Error sending friend request: $e");
+          }
+        }
+
         return Scaffold(
+          appBar: AppBar(
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: IconButton(
+                  icon: const Icon(Icons.person_add),
+                  onPressed: sendFriendRequest
+                ),
+              ),
+            ],
+          ),
           body: Stack(
             children: [
               SingleChildScrollView(
@@ -72,51 +120,43 @@ class _ViewProfileState extends State<ViewProfile> {
                 child: Column(
                   children: [
                     // Profile Header Section
-                    Container(
-                      padding: EdgeInsets.only(
-                        top: MediaQuery.of(context).size.height * 0.1, // Dynamic top padding
-                        left: 16.0,
-                        right: 16.0,
-                        bottom: 16.0,
-                      ),
-                      child: Column(
-                        children: [
-                          Stack(
-                            children: [
-                              ProfilePicture(
-                                profilePicture: user["profile_picture"],
-                                profile: true,
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            "@${user["username"]}",
-                            style: GoogleFonts.lato(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
+                    Column(
+                      children: [
+                        Stack(
+                          children: [
+                            ProfilePicture(
+                              profilePicture: account["profile_picture"],
+                              profile: true,
                             ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "@${account["username"]}",
+                          style: GoogleFonts.lato(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
                           ),
-                          Text(
-                            "${user["first_name"]} ${user["last_name"]}",
-                            style: GoogleFonts.lato(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                            ),
+                        ),
+                        Text(
+                          "${account["first_name"]} ${account["last_name"]}",
+                          style: GoogleFonts.lato(
+                            fontSize: 16,
+                            color: Colors.grey[600],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          _buildStatColumn('Friends', user["friends"].length.toString()),
+                          _buildStatColumn('Friends', account["friends"].length.toString()),
                           _buildStatColumn('Win Rate', 
-                            "${user["total_bets"] > 0 ? ((user["wonBets"] / user["total_bets"]) * 100).toStringAsFixed(1) : '0'}%"
+                            "${account["total_bets"] > 0 ? ((account["wonBets"] / account["total_bets"]) * 100).toStringAsFixed(1) : '0'}%"
                           ),
-                          _buildStatColumn('Total Bets', user["total_bets"].toString()),
+                          _buildStatColumn('Total Bets', account["total_bets"].toString()),
                         ],
                       ),
                     ),
@@ -142,19 +182,19 @@ class _ViewProfileState extends State<ViewProfile> {
                                     ),
                                   ),
                                   Icon(
-                                    user["total_money_won"] >= 0 ? Icons.trending_up : Icons.trending_down,
-                                    color: user["total_money_won"] >= 0 ? Colors.green : Colors.red,
+                                    account["total_money_won"] >= 0 ? Icons.trending_up : Icons.trending_down,
+                                    color: account["total_money_won"] >= 0 ? Colors.green : Colors.red,
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 16),
                               Center(
                                 child: Text(
-                                  "${user["total_money_won"] >= 0 ? '+' : '-'}\$${user["total_money_won"].abs().toStringAsFixed(2)}",
+                                  "${account["total_money_won"] >= 0 ? '+' : '-'}\$${account["total_money_won"].abs().toStringAsFixed(2)}",
                                   style: GoogleFonts.lato(
                                     fontSize: 36,
                                     fontWeight: FontWeight.bold,
-                                    color: user["total_money_won"] >= 0 ? Colors.green : Colors.red,
+                                    color: account["total_money_won"] >= 0 ? Colors.green : Colors.red,
                                   ),
                                 ),
                               ),
@@ -223,16 +263,6 @@ class _ViewProfileState extends State<ViewProfile> {
                       height: MediaQuery.of(context).size.height * 0.1
                     )
                   ],
-                ),
-              ),
-              Positioned(
-                left: 16.0,
-                top: MediaQuery.of(context).size.height * 0.08, // Align dynamically with content
-                child: IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.black),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
                 ),
               ),
             ],

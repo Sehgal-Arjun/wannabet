@@ -22,13 +22,14 @@ class UserObject {
   final String? profile_picture;
   final String? first_name;
   final String? last_name;
-  final String? fullName;
+  final String? full_name;
   final String? username;
   final List<String> friends;
   final List<String> pinnedBets;
   final double total_money_won;
   final int total_bets;
-  final String? usernameLowercase;
+  final String? username_lowercase;
+  final List<Map<String, dynamic>> friend_requests;
 
   UserObject({
     required this.uid,
@@ -36,13 +37,14 @@ class UserObject {
     this.profile_picture,
     this.first_name,
     this.last_name,
-    this.fullName,
+    this.full_name,
     this.username,
     this.friends = const [],
     this.pinnedBets = const [],
     this.total_money_won = 0.0,
     this.total_bets = 0,
-    this.usernameLowercase,
+    this.username_lowercase,
+    this.friend_requests = const [],
   });
 }
 
@@ -211,18 +213,19 @@ class _HomePageState extends State<HomePage> {
 
   UserObject _buildUserFromData(Map<String, dynamic> userData) {
     return UserObject(
-      uid: userData['uid'] ?? '',
+      uid: user.uid,
       email: userData['email'],
       profile_picture: userData['profile_picture'],
       first_name: userData['first_name'],
       last_name: userData['last_name'],
-      fullName: userData['full_name'],
+      full_name: userData['full_name'],
       username: userData['username'],
       friends: List<String>.from(userData['friends'] ?? []),
       pinnedBets: List<String>.from(userData['pinned_bets'] ?? []),
       total_money_won: userData['totalMoneyWon']?.toDouble() ?? 0.0,
       total_bets: userData['totalBets'] ?? 0,
-      usernameLowercase: userData['usernameLowercase'],
+      username_lowercase: userData['username_lowercase'],
+      friend_requests: List<Map<String, dynamic>>.from(userData['friend_requests'] ?? []),
     );
   }
 
