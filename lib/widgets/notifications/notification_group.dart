@@ -7,7 +7,7 @@ class NotificationGroup extends StatefulWidget {
   final bool startCollapsed;
   final bool collapsable;
   final List<Map<String, dynamic>> items;
-  final currentUserId;
+  final user;
 
   const NotificationGroup({
     super.key,
@@ -15,7 +15,7 @@ class NotificationGroup extends StatefulWidget {
     this.startCollapsed = false,
     this.collapsable = true,
     required this.items,
-    required this.currentUserId,
+    required this.user,
   });
 
   @override
@@ -72,8 +72,8 @@ class _NotificationGroupState extends State<NotificationGroup> {
                   commentText: item['commentText'] ?? '',
                   username: item['username'] ?? '',
                   fullName: item['full_name'] ?? '',
-                  currentUserId: widget.currentUserId ?? '',
                   friendId: item['id'] ?? '',
+                  user: widget.user,
                 );
               }).toList(),
             ),

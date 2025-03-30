@@ -235,7 +235,7 @@ class _HomePageState extends State<HomePage> {
       future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
       builder: (context, snapshot) {
         if (!snapshot.hasData || !snapshot.data!.exists) {
-          return LoadingPage(user: [], selectedIndex: _selectedIndex, title: 'Home');
+          return LoadingPage(user: [], selectedIndex: _selectedIndex, title: 'WannaBet');
         }
 
         var userData = snapshot.data!;

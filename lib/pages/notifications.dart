@@ -87,7 +87,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                       'id': friendRequest['uid'],
                     },
                   ],
-                  currentUserId: widget.user.uid,
+                  user: widget.user,
                 ),
               ],
             ),
