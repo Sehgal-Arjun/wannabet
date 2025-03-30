@@ -14,6 +14,7 @@ import 'package:wannabet/widgets/profile_picture.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
+import 'package:wannabet/pages/friends_list.dart';
 
 class ProfilePage extends StatefulWidget {
   final user;
@@ -152,19 +153,79 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-          
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildStatColumn('Friends', user.friends.length.toString()),
-                  _buildStatColumn('Win Rate', 
-                    "${user.total_bets > 0 ? ((user.wonBets / user.total_bets) * 100).toStringAsFixed(1) : '0'}%"
-                  ),
-                  _buildStatColumn('Total Bets', user.total_bets.toString()),
-                ],
-              ),
+            Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        print("Friends button tapped");
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FriendsListPage(user: user),
+                          ),
+                        );
+                      },
+                      child: Column(
+                        children: [
+                          Text(
+                            user.friends.length.toString(),
+                            style: GoogleFonts.lato(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Friends',
+                            style: GoogleFonts.lato(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          '0%',
+                          style: GoogleFonts.lato(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Win Rate',
+                          style: GoogleFonts.lato(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          '0',
+                          style: GoogleFonts.lato(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Total Bets',
+                          style: GoogleFonts.lato(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 24),
 
@@ -277,27 +338,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ProfilePage(user: user),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatColumn(String label, String value) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          value,
-          style: GoogleFonts.lato(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          label,
-          style: GoogleFonts.lato(
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
     );
   }
 }
