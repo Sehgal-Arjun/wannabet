@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:wannabet/pages/notifications.dart';
 import 'package:wannabet/pages/stats.dart';
 import 'package:wannabet/pages/view_profile.dart';
 import 'package:wannabet/widgets/custom_text_field.dart';
@@ -85,6 +86,19 @@ class _SocialPageState extends State<SocialPage> {
           appBar: AppBar(
             title: const Text('Social'),
             automaticallyImplyLeading: false,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.inbox_outlined),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => NotificationsPage(user: user),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
 
           body: Column(
@@ -119,7 +133,7 @@ class _SocialPageState extends State<SocialPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ViewProfile(uid:userUid),
+                              builder: (context) => ViewProfile(uid:userUid, user: user),
                             ),
                           );
                         },
