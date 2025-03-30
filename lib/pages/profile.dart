@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wannabet/pages/friends_list.dart';
 import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/pages/new_bet.dart';
 import 'package:wannabet/pages/settings.dart';
@@ -14,7 +15,6 @@ import 'package:wannabet/widgets/profile_picture.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
-import 'package:wannabet/pages/friends_list.dart';
 
 class ProfilePage extends StatefulWidget {
   final user;
@@ -41,7 +41,7 @@ class _ProfilePageState extends State<ProfilePage> {
     if (pickedFile != null) {
       String userId = FirebaseAuth.instance.currentUser!.uid;
       File imageFile = File(pickedFile.path);
-      
+
       try {
         Reference storageRef = FirebaseStorage.instance
             .ref()
@@ -153,79 +153,36 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
 
-            Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    GestureDetector(
-                      onTap: () {
-                        print("Friends button tapped");
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FriendsListPage(user: user),
-                          ),
-                        );
-                      },
-                      child: Column(
-                        children: [
-                          Text(
-                            user.friends.length.toString(),
-                            style: GoogleFonts.lato(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Friends',
-                            style: GoogleFonts.lato(
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildStatColumn(
+                  'Friends',
+                  user.friends.length.toString(),
+                  () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FriendsListPage(user: user),
                       ),
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          '0%',
-                          style: GoogleFonts.lato(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Win Rate',
-                          style: GoogleFonts.lato(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Text(
-                          '0',
-                          style: GoogleFonts.lato(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'Total Bets',
-                          style: GoogleFonts.lato(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
+                    );
+                  }
                 ),
-              ],
+                  _buildStatColumn(
+                  'Win Rate', 
+                  "${user.total_bets > 0 ? ((user.wonBets / user.total_bets) * 100).toStringAsFixed(1) : '0'}%",
+                  () {} // onClick here if needed
+                  ),
+                  _buildStatColumn(
+                  'Total Bets',
+                  user.total_bets.toString(),
+                  () {} // onClick here if needed)
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 24),
 
@@ -276,7 +233,7 @@ class _ProfilePageState extends State<ProfilePage> {
               listTitle: "Pinned Bets",
               fetchBets: fetchPinnedBets,
             ),
-            
+
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: CustomCard(
@@ -340,4 +297,29 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
     );
   }
-}
+
+  Widget _buildStatColumn(String label, String value, GestureTapCallback onClick) {
+     return GestureDetector(
+      onTap: onClick,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            value,
+            style: GoogleFonts.lato(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            label,
+            style: GoogleFonts.lato(
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+ }
+ 
