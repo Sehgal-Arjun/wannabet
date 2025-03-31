@@ -37,3 +37,7 @@ flutter:
     - assets/logInAnimation.json
     - assets/noSearchResultsAnimation.json
     - assets/noNotificationsAnimation.json
+    - assets/friendRequestSentAnimation.json
+    - assets/noFriendsAnimation.json
+    - assets/acceptFriendRequestHeartAnimation.json
+    - assets/denyFriendRequestXAnimation.json
