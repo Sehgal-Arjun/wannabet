@@ -72,11 +72,10 @@ class _FriendsListPageState extends State<FriendsListPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Lottie.asset(
-                    'assets/noNotificationsAnimation.json',
+                    'assets/noFriendsAnimation.json',
                     width: MediaQuery.of(context).size.width / 1.15,
                     height: MediaQuery.of(context).size.width / 1.15,
                   ),
-                  const SizedBox(height: 30),
                   Text(
                     'No friends yet',
                     style: GoogleFonts.lato(color: Colors.black, fontSize: 16),

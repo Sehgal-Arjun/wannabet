@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:wannabet/pages/view_profile.dart';
 
 class NotificationItem extends StatefulWidget {
@@ -56,11 +57,14 @@ class _NotificationItemState extends State<NotificationItem> {
         .update({
           'friend_requests': updatedFriendRequests
         });
-      if (declined) {Navigator.of(context).pop();} // close dialog
+
     } catch (e) {
       print("Error removing friend request: $e");
     }
   }
+
+  bool isAccepted = false;
+  bool isDenied = false;
 
   @override
   Widget build(BuildContext context) {
@@ -103,38 +107,79 @@ class _NotificationItemState extends State<NotificationItem> {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.add_circle_outline, color: Colors.black),
-                    onPressed: () async {
-                      await acceptFriendRequest(widget.friendId);
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.remove_circle_outline, color: Colors.black),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text("Decline Friend Request"),
-                            content: const Text("Are you sure you want to decline this friend request?"),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop(); // Close the dialog
-                                },
-                                child: const Text("Cancel"),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  removeFriendRequest(widget.friendId, true);
-                                },
-                                child: const Text("Remove"),
-                              ),
-                            ],
-                          );
+                  StatefulBuilder(
+                    builder: (context, setState) {
+                      return isAccepted
+                      ? SizedBox(
+                        width: 50,
+                        child: Lottie.asset(
+                          'assets/acceptFriendRequestHeartAnimation.json',
+                          repeat: false,
+                          onLoaded: (composition) {
+                            Future.delayed(composition.duration, () async {
+                              await acceptFriendRequest(widget.friendId);
+                            });
+                            setState(() {});
+                          },
+                        ),
+                      )
+                      : IconButton(
+                        icon: const Icon(Icons.add_circle_outline, color: Colors.black),
+                        onPressed: () {
+                          setState(() {
+                            isAccepted = true;
+                          });
                         },
                       );
+                    },
+                  ),
+                  StatefulBuilder(
+                    builder: (context, setState) {
+                      return isDenied
+                      ? SizedBox(
+                        width: 30,
+                        child: Lottie.asset(
+                          'assets/denyFriendRequestXAnimation.json',
+                          repeat: false,
+                          onLoaded: (composition) {
+                            Future.delayed(composition.duration, () async {
+                              await removeFriendRequest(widget.friendId, true);
+                            });
+                            setState(() {});
+                          },
+                        ),
+                      )
+                      : IconButton(
+                          icon: const Icon(Icons.remove_circle_outline, color: Colors.black),
+                          onPressed: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: const Text("Decline Friend Request"),
+                                  content: const Text("Are you sure you want to decline this friend request?"),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop(); // Close the dialog
+                                      },
+                                      child: const Text("Cancel"),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        setState(() {
+                                          isDenied = true;
+                                        });
+                                      },
+                                      child: const Text("Remove"),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                        );
                     },
                   ),
                 ],

@@ -75,7 +75,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
             child: Column(
               children: [
                 if (friendRequests.isNotEmpty) NotificationGroup(
-                  title: 'Friend Requests',
+                  title: 'Friend requests',
                   startCollapsed: false,
                   collapsable: true,
                   items: [

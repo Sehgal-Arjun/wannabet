@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:wannabet/widgets/bet_list.dart';
 import 'package:wannabet/widgets/custom_card.dart';
 import 'package:wannabet/widgets/loading_page.dart';
@@ -42,6 +43,23 @@ class _ViewProfileState extends State<ViewProfile> {
         }
 
         var account = snapshot.data!;
+
+        bool alreadyFriends = account["friends"].contains(widget.user.uid);
+        bool friendRequestSent = false;
+        for (var request in account["friend_requests"]) {
+          if (request["uid"] == widget.user.uid) {
+            friendRequestSent = true;
+            break;
+          }
+        }
+
+        bool friendRequestReceived = false;
+        for (var request in widget.user.friend_requests) {
+          if (request["uid"] == account["id"]) {
+            friendRequestSent = true;
+            break;
+          }
+        }
 
         Future<List<dynamic>> fetchPinnedBets() async {
           try {
@@ -85,7 +103,7 @@ class _ViewProfileState extends State<ViewProfile> {
               }
             }
 
-            // Add the friend request to the account's receivedFriendRequests
+            // Add the friend request to the account's friend_requests
             await FirebaseFirestore.instance.collection('users').doc(friendId).update({
               "friend_requests": FieldValue.arrayUnion([
                 {
@@ -96,21 +114,68 @@ class _ViewProfileState extends State<ViewProfile> {
                 }
               ]),
             });
+
+            // play sent friend request animation
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              barrierColor: Colors.black.withAlpha((0.5 * 255).toInt()),
+              useSafeArea: true,
+              builder: (BuildContext context) {
+                return Center(
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width * 0.5,
+                    height: MediaQuery.of(context).size.width * 0.5,
+                    child: Lottie.asset(
+                      'assets/friendRequestSentAnimation.json',
+                      repeat: false,
+                      onLoaded: (composition) {
+                        Future.delayed(composition.duration, () {
+                          Navigator.of(context).pop();
+                        });
+                      },
+                    ),
+                  ),
+                );
+              },
+            );
+
+            setState(() {});
           } catch (e) {
             print("Error sending friend request: $e");
           }
         }
 
+        Future removeFriend() async {
+          print("hi");
+        }
+
         return Scaffold(
-          appBar: AppBar(
+            appBar: AppBar(
             actions: [
-              Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: IconButton(
-                  icon: const Icon(Icons.person_add),
-                  onPressed: sendFriendRequest
+              if (!friendRequestReceived) ...[
+                if (!alreadyFriends && !friendRequestSent) Padding( // not friends and no request sent
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: IconButton(
+                    icon: const Icon(Icons.person_add, color: Colors.black),
+                    onPressed: sendFriendRequest,
+                  ),
                 ),
-              ),
+                if (!alreadyFriends && friendRequestSent) Padding( // pending request
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: IconButton(
+                    icon: const Icon(Icons.watch_later_outlined, color: Colors.black),
+                    onPressed: null,
+                  ),
+                ),
+                if (alreadyFriends) Padding( // already friends
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: IconButton(
+                    icon: const Icon(Icons.add_task_outlined, color: Colors.black),
+                    onPressed: removeFriend,
+                  ),
+                ),
+              ],
             ],
           ),
           body: Stack(
