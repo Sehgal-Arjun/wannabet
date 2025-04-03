@@ -20,7 +20,7 @@ class NavBar extends StatelessWidget {
         if (index == selectedIndex) return;
         
         onItemTapped(index);
-        Navigator.of(context).pushReplacement(
+        Navigator.of(context).push(
           PageRouteBuilder(
             pageBuilder: (context, animation, secondaryAnimation) => pages[index],
             transitionDuration: Duration.zero,
