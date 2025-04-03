@@ -41,3 +41,4 @@ flutter:
     - assets/noFriendsAnimation.json
     - assets/acceptFriendRequestHeartAnimation.json
     - assets/denyFriendRequestXAnimation.json
+    - assets/betSentAnimation.json

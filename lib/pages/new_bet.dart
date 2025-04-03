@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:lottie/lottie.dart';
 import 'package:wannabet/widgets/navbar.dart';
 import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/pages/stats.dart';
@@ -23,6 +24,14 @@ class _NewBetPageState extends State<NewBetPage> {
   final descriptionController = TextEditingController();
   final amountController = TextEditingController();
   double currentAmount = 0;
+  
+  int _selectedIndex = 2;
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
 
   @override
   void initState() {
@@ -34,9 +43,9 @@ class _NewBetPageState extends State<NewBetPage> {
     try {
      
       var userDoc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(widget.user.uid)
-          .get();
+        .collection('users')
+        .doc(widget.user.uid)
+        .get();
       
       List<String> friendIds = List<String>.from(userDoc.data()?['friends'] ?? []);
       
@@ -45,9 +54,9 @@ class _NewBetPageState extends State<NewBetPage> {
         var friendDocs = await Future.wait(
           friendIds.map((friendId) => 
             FirebaseFirestore.instance
-                .collection('users')
-                .doc(friendId)
-                .get()
+              .collection('users')
+              .doc(friendId)
+              .get()
           )
         );
 
@@ -102,27 +111,49 @@ class _NewBetPageState extends State<NewBetPage> {
       
       for (String friendId in selectedFriendIds) {
         await FirebaseFirestore.instance
-            .collection('users')
-            .doc(friendId)
-            .collection('notifications')
-            .add({
-              'type': 'bet_invite',
-              'bet_id': betDoc.id,
-              'from_user_id': widget.user.uid,
-              'from_username': widget.user.username,
-              'title': titleController.text,
-              'amount': double.parse(amountController.text),
-              'created_at': FieldValue.serverTimestamp(),
-              'read': false,
-              'side': 'two',
-              'individual_stake': double.parse(amountController.text) / selectedFriendIds.length,
-            });
+          .collection('users')
+          .doc(friendId)
+          .collection('notifications')
+          .add({
+            'type': 'bet_invite',
+            'bet_id': betDoc.id,
+            'from_user_id': widget.user.uid,
+            'from_username': widget.user.username,
+            'title': titleController.text,
+            'amount': double.parse(amountController.text),
+            'created_at': FieldValue.serverTimestamp(),
+            'read': false,
+            'side': 'two',
+            'individual_stake': double.parse(amountController.text) / selectedFriendIds.length,
+          });
       }
 
       if (mounted) {
-        _navigateToHome();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Bet created successfully!')),
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          barrierColor: Colors.black.withAlpha((0.5 * 255).toInt()),
+          useSafeArea: true,
+          builder: (BuildContext context) {
+            return Center(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width * 0.5,
+                height: MediaQuery.of(context).size.width * 0.5,
+                child: Lottie.asset(
+                  'assets/betSentAnimation.json',
+                  repeat: false,
+                  onLoaded: (composition) {
+                    Future.delayed(composition.duration, () {
+                      _navigateToHome();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Bet created successfully!')),
+                      );
+                    });
+                  },
+                ),
+              ),
+            );
+          },
         );
       }
     } catch (e) {
@@ -429,10 +460,7 @@ class _NewBetPageState extends State<NewBetPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: _navigateToHome,
-        ),
+        automaticallyImplyLeading: false,
         title: Text(
           'New Bet',
           style: GoogleFonts.lato(
@@ -441,56 +469,63 @@ class _NewBetPageState extends State<NewBetPage> {
           ),
         ),
         actions: [
-          if (selectedFriendIds.isNotEmpty)
-            TextButton(
-              onPressed: _showBetDetailsDialog,
-              child: Text(
-                'Next',
-                style: GoogleFonts.lato(
-                  color: const Color(0xff5e548e),
-                  fontWeight: FontWeight.bold,
-                ),
+          if (selectedFriendIds.isNotEmpty) TextButton(
+            onPressed: _showBetDetailsDialog,
+            child: Text(
+              'Next',
+              style: GoogleFonts.lato(
+                color: const Color(0xff5e548e),
+                fontWeight: FontWeight.bold,
               ),
             ),
+          ),
         ],
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : friends.isEmpty
-              ? Center(
-                  child: Text(
-                    'No friends yet',
-                    style: GoogleFonts.lato(fontSize: 16),
-                  ),
-                )
-              : ListView.builder(
-                  itemCount: friends.length,
-                  itemBuilder: (context, index) {
-                    final friend = friends[index];
-                    final isSelected = selectedFriendIds.contains(friend['id']);
+      body: isLoading ? const Center(child: CircularProgressIndicator())
+      : friends.isEmpty ? Center (
+        child: Text(
+          'No friends yet',
+          style: GoogleFonts.lato(fontSize: 16),
+        ),
+      ) : ListView.builder(
+        itemCount: friends.length,
+        itemBuilder: (context, index) {
+          final friend = friends[index];
+          final isSelected = selectedFriendIds.contains(friend['id']);
 
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(friend['profile_picture']),
-                      ),
-                      title: Text(
-                        friend['username'],
-                        style: GoogleFonts.lato(),
-                      ),
-                      trailing: isSelected
-                          ? const Icon(Icons.check_circle, color: Color(0xff5e548e))
-                          : const Icon(Icons.circle_outlined),
-                      onTap: () {
-                        setState(() {
-                          if (isSelected) {
-                            selectedFriendIds.remove(friend['id']);
-                          } else {
-                            selectedFriendIds.add(friend['id']);
-                          }
-                        });
-                      },
-                    );
-                  },
+          return ListTile(
+            leading: CircleAvatar(
+              backgroundImage: NetworkImage(friend['profile_picture']),
+            ),
+            title: Text(
+              friend['username'],
+              style: GoogleFonts.lato(),
+            ),
+            trailing: isSelected
+                ? const Icon(Icons.check_circle, color: Color(0xff5e548e))
+                : const Icon(Icons.circle_outlined),
+            onTap: () {
+              setState(() {
+                if (isSelected) {
+                  selectedFriendIds.remove(friend['id']);
+                } else {
+                  selectedFriendIds.add(friend['id']);
+                }
+              });
+            },
+          );
+        },
+      ),
+      bottomNavigationBar: NavBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
+        pages: [
+          HomePage(),
+          StatsPage(user: widget.user),
+          NewBetPage(user: widget.user),
+          SocialPage(user: widget.user),
+          ProfilePage(user: widget.user),
+        ],
       ),
     );
   }

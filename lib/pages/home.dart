@@ -292,7 +292,7 @@ class _HomePageState extends State<HomePage> {
                         _buildQuickAction(
                           Icons.add_circle_outline,
                           'New Bet',
-                          () => Navigator.pushReplacement(
+                          () => Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => NewBetPage(user: user)),
                           ),
