@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:wannabet/pages/bet_invites.dart';
 import 'package:wannabet/widgets/loading_page.dart';
 import 'package:wannabet/widgets/navbar.dart';
 import 'package:wannabet/pages/stats.dart';
@@ -242,6 +243,21 @@ class _HomePageState extends State<HomePage> {
         Map<String, dynamic> data = userData.data() as Map<String, dynamic>;
 
         final user = _buildUserFromData(data);
+        final betInvites = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('notifications')
+          .where('type', isEqualTo: 'bet_invite')
+          .get()
+          .then((querySnapshot) {
+            return querySnapshot.docs.map((doc) {
+              final data = doc.data();
+              return {
+                ...data,
+                'notification_id': doc.id,
+              };
+            }).toList();
+          });
 
         return Scaffold(
           appBar: AppBar(
@@ -254,6 +270,83 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             automaticallyImplyLeading: false,
+            actions: [
+              Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.inbox_outlined),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
+                          future: betInvites,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              return LoadingPage(user: [], selectedIndex: 0, title: 'Loading...');
+                            }
+                            if (snapshot.hasError || !snapshot.hasData) {
+                              return const Center(child: Text('Error loading invites'));
+                            }
+                            return BetInvitesPage(betInvites: snapshot.data!, user: user);
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                if (betInvites != null)
+                  FutureBuilder<List<Map<String, dynamic>>>(
+                    future: betInvites,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                      return Positioned(
+                        right: 8,
+                        top: 8,
+                        child: GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
+                                future: betInvites,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState == ConnectionState.waiting) {
+                                    return LoadingPage(user: [], selectedIndex: 0, title: 'Loading...');
+                                  }
+                                  if (snapshot.hasError || !snapshot.hasData) {
+                                    return const Center(child: Text('Error loading invites'));
+                                  }
+                                  return BetInvitesPage(betInvites: snapshot.data!, user: user);
+                                },
+                              ),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                          '${snapshot.data!.length}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          ),
+                        ),
+                        ),
+                      );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ],
+              ),
+            ],
           ),
           body: RefreshIndicator(
             onRefresh: () async {
