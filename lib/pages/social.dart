@@ -199,20 +199,6 @@ class _SocialPageState extends State<SocialPage> {
 
               // Friends section
                 if (searchResults.isEmpty && _searchController.text.isEmpty) ...[
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-                  child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    "Friends",
-                    style: GoogleFonts.lato(
-                    fontSize: 25,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                    ),
-                  ),
-                  ),
-                ),
                 FutureBuilder(
                   future: Future.wait(
                     List.from(user.friends).map((friendId) async {
@@ -234,22 +220,23 @@ class _SocialPageState extends State<SocialPage> {
 
                     if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
                       return Padding(
-                        padding: EdgeInsets.zero,
+                        padding: const EdgeInsets.all(16.0),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
+                            SizedBox(height: 30),
                             Lottie.asset(
                               'assets/noFriendsAnimation2.json',
-                              height: 175,
+                              width: MediaQuery.of(context).size.width / 1.5,
+                              height: MediaQuery.of(context).size.width / 1.5,
+                              repeat: false,
                             ),
-                            SizedBox(height: 10),
+                            SizedBox(height: 30),
                             Text(
-                              "No friends found",
-                              style: GoogleFonts.lato(
-                              fontSize: 15,
-                              color: const Color.fromARGB(255, 27, 13, 13),
-                              ),
-                            )
-
+                              'No friends found.\nSearch for them to get started!',
+                              style: GoogleFonts.lato(color: Colors.black, fontSize: 16),
+                              textAlign: TextAlign.center,
+                            ),
                           ],
                         ),
                       );
@@ -260,6 +247,20 @@ class _SocialPageState extends State<SocialPage> {
 
                     return Column(
                       children: [
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              "Friends",
+                              style: GoogleFonts.lato(
+                                fontSize: 25,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
                         SizedBox(
                           height: 200,
                           child: PageView.builder(
