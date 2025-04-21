@@ -30,7 +30,6 @@ class _SocialPageState extends State<SocialPage> {
   int _selectedIndex = 3;
   final _searchController = TextEditingController();
   final friendsController = PageController(viewportFraction: 1, keepPage: true, initialPage: 0);
-  final pageCount = 2;
   List<Map<String, String>> searchResults = []; // To hold search results
 
   void _onItemTapped(int index) {
@@ -199,62 +198,129 @@ class _SocialPageState extends State<SocialPage> {
 
               // Friends section
               if (searchResults.isEmpty && _searchController.text.isEmpty)
-              Column(
-                children: [
-                  SizedBox(
-                    height: 200,
-                    child: PageView.builder(
-                      controller: friendsController,
-                      itemCount: pageCount,
-                      itemBuilder: (_, pageIndex) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          child: GridView.builder(
-                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 4,
-                              mainAxisSpacing: 8.0,
-                              crossAxisSpacing: 8.0,
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    "Friends",
+                    style: GoogleFonts.lato(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+                FutureBuilder(
+                  future: Future.wait(
+                    List.from(user.friends).map((friendId) async {
+                      final doc = await FirebaseFirestore.instance.collection('users').doc(friendId).get();
+                      return {
+                        'username': doc['username'],
+                        'profile_picture': doc['profile_picture'] ?? 'http://www.gravatar.com/avatar/?d=mp',
+                        'id': doc.id,
+                      };
+                    }),
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+
+                    if (!snapshot.hasData || snapshot.data == null || snapshot.data!.isEmpty) {
+                      return Padding(
+                        padding: EdgeInsets.zero,
+                        child: Column(
+                          children: [
+                            Lottie.asset(
+                              'assets/noFriendsAnimation2.json',
+                              height: 175,
                             ),
-                            itemCount: 8,
-                            itemBuilder: (context, index) {
-                              return Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  ProfilePicture(),
-                                  SizedBox(height: 2),
-                                  Flexible(
-                                    child: Text(
-                                      'username${index + 1}', // Example username
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.black,
-                                      ),
-                                      overflow: TextOverflow.ellipsis, // Prevent overflow
-                                      maxLines: 1, // Limit to one line
-                                    ),
+                            SizedBox(height: 10),
+                            Text(
+                              "No friends found",
+                              style: GoogleFonts.lato(
+                              fontSize: 15,
+                              color: const Color.fromARGB(255, 27, 13, 13),
+                              ),
+                            )
+
+                          ],
+                        ),
+                      );
+                    }
+
+                    final friends = snapshot.data!;
+
+
+                    return Column(
+                      children: [
+                        SizedBox(
+                          height: 200,
+                          child: PageView.builder(
+                            controller: friendsController,
+                            itemCount: friends.length ~/ 8 + (friends.length % 8 == 0 ? 0 : 1),
+                            itemBuilder: (_, pageIndex) {
+                              final start = pageIndex * 8;
+                              final end = (start + 8).clamp(0, friends.length);
+                              final pageFriends = friends.sublist(start, end);
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 20),
+                                child: GridView.builder(
+                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: 4,
+                                    mainAxisSpacing: 8.0,
+                                    crossAxisSpacing: 8.0,
                                   ),
-                                ],
+                                  itemCount: pageFriends.length,
+                                  itemBuilder: (context, index) {
+                                    final friend = pageFriends[index];
+                                    return Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        ProfilePicture(profilePicture: friend['profile_picture'], user: user, accountId: friend['id'], searched: false),
+                                        SizedBox(height: 2),
+                                        Flexible(
+                                          child: Text(
+                                            friend['username'],
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.black,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  shrinkWrap: true,
+                                  physics: NeverScrollableScrollPhysics(),
+                                ),
                               );
                             },
-                            shrinkWrap: true,
-                            physics: NeverScrollableScrollPhysics(),
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                  SmoothPageIndicator(
-                    controller: friendsController, 
-                    count: pageCount,
-                    effect: ExpandingDotsEffect(
-                      dotWidth: 8,
-                      dotHeight: 8,
-                      activeDotColor: Color(0xff5e548e),
-                      dotColor: const Color.fromARGB(255, 206, 206, 206)
-                    ),
-                  ),
-                ]
-              ),
+                        ),
+                        SmoothPageIndicator(
+                          controller: friendsController, 
+                          count: friends.length ~/ 8 + (friends.length % 8 == 0 ? 0 : 1),
+                          effect: ExpandingDotsEffect(
+                            dotWidth: 8,
+                            dotHeight: 8,
+                            activeDotColor: Color(0xff5e548e),
+                            dotColor: const Color.fromARGB(255, 206, 206, 206)
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+
             ],
           ),
           

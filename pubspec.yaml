@@ -45,3 +45,4 @@ flutter:
     - assets/noBetInvitesAnimation.json
     - assets/acceptBetInviteAnimation.json
     - assets/denyBetInviteAnimation.json
+    - assets/noFriendsAnimation2.json
