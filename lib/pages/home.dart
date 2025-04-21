@@ -31,6 +31,7 @@ class UserObject {
   final int total_bets;
   final String? username_lowercase;
   final List<Map<String, dynamic>> friend_requests;
+  final List<Map<String, dynamic>> sent_friend_requests;
 
   UserObject({
     required this.uid,
@@ -46,6 +47,7 @@ class UserObject {
     this.total_bets = 0,
     this.username_lowercase,
     this.friend_requests = const [],
+    this.sent_friend_requests = const [],
   });
 }
 
@@ -128,6 +130,7 @@ UserObject _buildUserFromData(Map<String, dynamic> userData) {
       total_bets: userData['totalBets'] ?? 0,
       username_lowercase: userData['username_lowercase'],
       friend_requests: List<Map<String, dynamic>>.from(userData['friend_requests'] ?? []),
+      sent_friend_requests: List<Map<String, dynamic>>.from(userData['sent_friend_requests'] ?? []),
     );
 }
 

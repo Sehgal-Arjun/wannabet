@@ -44,6 +44,22 @@ class _NotificationItemState extends State<NotificationItem> {
           'friends': FieldValue.arrayUnion([widget.user.uid])
         });
 
+      // Remove current user from friend's sent friend requests
+      var sentFriendRequests = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(friendId)
+        .get()
+        .then((doc) => List<Map<String, dynamic>>.from(doc.data()?['sent_friend_requests'] ?? []));
+
+      var updatedSentFriendRequests = sentFriendRequests.where((request) => request['uid'] != widget.user.uid).toList();
+
+      await FirebaseFirestore.instance
+        .collection('users')
+        .doc(friendId)
+        .update({
+          'sent_friend_requests': updatedSentFriendRequests
+        });
+
       // Remove friend request from current user's friend requests
       removeFriendRequest(friendId, false);
     } catch (e) {
@@ -66,6 +82,39 @@ class _NotificationItemState extends State<NotificationItem> {
 
     } catch (e) {
       print("Error removing friend request: $e");
+    }
+  }
+
+  Future cancelFriendRequest(friendId, declined) async {
+    try {
+      // Remove friend request from current user's sent friend requests
+      var sentFriendRequests = widget.user.sent_friend_requests ?? [];
+      var updatedSentFriendRequests = sentFriendRequests.where((request) => request['uid'] != friendId).toList();
+
+      await FirebaseFirestore.instance
+        .collection('users')
+        .doc(widget.user.uid)
+        .update({
+          'sent_friend_requests': updatedSentFriendRequests
+        });
+      
+      // Remove friend request from friend's friend requests
+      var friendRequests = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(friendId)
+        .get()
+        .then((doc) => List<Map<String, dynamic>>.from(doc.data()?['friend_requests'] ?? []));
+      var updatedFriendRequests = friendRequests.where((request) => request['uid'] != widget.user.uid).toList();
+
+      await FirebaseFirestore.instance
+        .collection('users')
+        .doc(friendId)
+        .update({
+          'friend_requests': updatedFriendRequests
+        });
+
+    } catch (e) {
+      print("Error canceling friend request: $e");
     }
   }
 
@@ -525,7 +574,7 @@ class _NotificationItemState extends State<NotificationItem> {
             if (widget.action == "bet_invite") {
               _showBetDetailsDialog();
             }
-            else if (widget.action == "friend_request") {
+            else if (widget.action == "friend_request" || widget.action == "sent_friend_request") {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -548,6 +597,10 @@ class _NotificationItemState extends State<NotificationItem> {
                 "${widget.fullName} ",
                 style: GoogleFonts.lato(fontSize:18, color: Colors.black),
               ),
+              "sent_friend_request" => Text(
+                "${widget.fullName} ",
+                style: GoogleFonts.lato(fontSize:18, color: Colors.black),
+              ),
               "bet_invite" => Text(
                 "${widget.betTitle} ",
                 style: GoogleFonts.lato(fontSize:18, color: Colors.black),
@@ -561,6 +614,10 @@ class _NotificationItemState extends State<NotificationItem> {
               children: [
                 switch (widget.action) {
                   "friend_request" => Text(
+                    "@${widget.username}",
+                    style: GoogleFonts.lato(fontSize:14, color: Colors.black),
+                  ),
+                  "sent_friend_request" => Text(
                     "@${widget.username}",
                     style: GoogleFonts.lato(fontSize:14, color: Colors.black),
                   ),
@@ -678,7 +735,62 @@ class _NotificationItemState extends State<NotificationItem> {
               "\$${widget.betAmount}",
               style: GoogleFonts.lato(fontSize: 18),
             )
-             : null,
+            : widget.action == "sent_friend_request" ?
+            Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  StatefulBuilder(
+                    builder: (context, setState) {
+                      return isDenied
+                      ? SizedBox(
+                        width: 30,
+                        child: Lottie.asset(
+                          'assets/denyFriendRequestXAnimation.json',
+                          repeat: false,
+                          onLoaded: (composition) {
+                            Future.delayed(composition.duration, () async {
+                              await cancelFriendRequest(widget.friendId, true);
+                            });
+                            setState(() {});
+                          },
+                        ),
+                      )
+                      : IconButton(
+                        icon: const Icon(Icons.remove_circle_outline, color: Colors.black),
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: const Text("Cancel friend request"),
+                                content: const Text("Are you sure you want to cancel this friend request?"),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop(); // Close the dialog
+                                    },
+                                    child: const Text("Go back"),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      setState(() {
+                                        isDenied = true;
+                                      });
+                                    },
+                                    child: const Text("Cancel friend request"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ],
+              )
+            : null,
           ),
         ),
       ],
