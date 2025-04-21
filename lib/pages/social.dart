@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:wannabet/pages/notifications.dart';
+import 'package:wannabet/pages/sent_friend_requests.dart';
 import 'package:wannabet/pages/stats.dart';
 import 'package:wannabet/pages/view_profile.dart';
 import 'package:wannabet/widgets/custom_text_field.dart';
@@ -249,16 +250,44 @@ class _SocialPageState extends State<SocialPage> {
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              "Friends",
-                              style: GoogleFonts.lato(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                "Friends",
+                                style: GoogleFonts.lato(
                                 fontSize: 25,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black,
+                                ),
                               ),
-                            ),
+                              ),
+                              if (user.sent_friend_requests != null && user.sent_friend_requests.isNotEmpty)
+                              GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ViewSentFriendRequests(user: user),
+                                    ),
+                                  );
+                                },
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                    "Sent Requests",
+                                    style: GoogleFonts.lato(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         SizedBox(

@@ -115,6 +115,18 @@ class _ViewProfileState extends State<ViewProfile> {
               ]),
             });
 
+            // Add the account to the current user's sent_friend_requests
+            await FirebaseFirestore.instance.collection('users').doc(currentUser.uid).update({
+              "sent_friend_requests": FieldValue.arrayUnion([
+                {
+                  "uid": friendId,
+                  "profile_picture": account["profile_picture"],
+                  "full_name": account["full_name"],
+                  "username": account["username"],
+                }
+              ]),
+            });
+
             // play sent friend request animation
             showDialog(
               context: context,

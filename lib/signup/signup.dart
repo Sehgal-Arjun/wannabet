@@ -41,6 +41,7 @@ class _SignUpPageState extends State<SignUpPage> {
           "profile_picture": null,
           "friends": [],
           "friend_requests": [],
+          "sent_friend_requests": [],
           "pinned_bets": [],
           "total_money_won": 0.0,
           "total_bets": 0,
