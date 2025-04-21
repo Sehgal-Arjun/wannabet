@@ -186,6 +186,7 @@ class _SocialPageState extends State<SocialPage> {
                         'assets/noSearchResultsAnimation.json',
                         width: MediaQuery.of(context).size.width / 1.25,
                         height: MediaQuery.of(context).size.width / 1.25,
+                        repeat: false,
                       ),
                       SizedBox(height: 30),
                       Text(
@@ -197,21 +198,21 @@ class _SocialPageState extends State<SocialPage> {
                 ),
 
               // Friends section
-              if (searchResults.isEmpty && _searchController.text.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
-                child: Align(
+                if (searchResults.isEmpty && _searchController.text.isEmpty) ...[
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16, left: 16, right: 16),
+                  child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     "Friends",
                     style: GoogleFonts.lato(
-                      fontSize: 25,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                    fontSize: 25,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                     ),
                   ),
+                  ),
                 ),
-              ),
                 FutureBuilder(
                   future: Future.wait(
                     List.from(user.friends).map((friendId) async {
@@ -320,7 +321,7 @@ class _SocialPageState extends State<SocialPage> {
                     );
                   },
                 ),
-
+              ],
             ],
           ),
           
