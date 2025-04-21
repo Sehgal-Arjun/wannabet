@@ -88,15 +88,17 @@ class _NewBetPageState extends State<NewBetPage> {
       }
 
       final betDoc = FirebaseFirestore.instance.collection('bets').doc();
+
+      final sideTwoMembers = {for (var id in selectedFriendIds) id: 'pending'};
       
       final betData = {
         'bet_name': titleController.text,
         'status': 'pending',
         'id': betDoc.id,
-        'side_one_members': [widget.user.uid],
+        'side_one_members': {widget.user.uid: 'pending'},
         'side_one_name': "Side one Wins",
-        'side_one_value': amountController.text,
-        'side_two_members': selectedFriendIds,
+        'side_one_value': amountController.text, 
+        'side_two_members': sideTwoMembers,
         'side_two_name': "Side two Wins",
         'side_two_value': amountController.text,
         'winning_side': "",
@@ -104,6 +106,10 @@ class _NewBetPageState extends State<NewBetPage> {
         'creator': widget.user.uid,
         'creator_username': widget.user.username,
         'description': descriptionController.text,
+        'user_statuses': {
+          widget.user.uid: 'accepted',
+          ...{for (var id in selectedFriendIds) id: 'pending'},
+        },
       };
 
       await betDoc.set(betData);
@@ -124,7 +130,9 @@ class _NewBetPageState extends State<NewBetPage> {
             'created_at': FieldValue.serverTimestamp(),
             'read': false,
             'side': 'two',
+            'from_full_name': widget.user.full_name,
             'individual_stake': double.parse(amountController.text) / selectedFriendIds.length,
+            'from_profile_picture': widget.user.profile_picture,
           });
       }
 
@@ -229,14 +237,14 @@ class _NewBetPageState extends State<NewBetPage> {
                                 Wrap(
                                   spacing: 8,
                                   children: friends
-                                      .where((friend) => selectedFriendIds.contains(friend['id']))
-                                      .map((friend) => Chip(
-                                            avatar: CircleAvatar(
-                                              backgroundImage: NetworkImage(friend['profile_picture']),
-                                            ),
-                                            label: Text(friend['username']),
-                                          ))
-                                      .toList(),
+                                    .where((friend) => selectedFriendIds.contains(friend['id']))
+                                    .map((friend) => Chip(
+                                          avatar: CircleAvatar(
+                                            backgroundImage: NetworkImage(friend['profile_picture']),
+                                          ),
+                                          label: Text(friend['username']),
+                                        ))
+                                    .toList(),
                                 ),
                               ],
                             ),

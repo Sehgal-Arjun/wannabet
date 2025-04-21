@@ -44,7 +44,7 @@ class _NotificationGroupState extends State<NotificationGroup> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
+          widget.title != "" ? Padding(
             padding: const EdgeInsets.only(right: 16.0),
             child: GestureDetector(
               onTap: widget.collapsable ? toggleCollapse : null,
@@ -62,7 +62,7 @@ class _NotificationGroupState extends State<NotificationGroup> {
                 ],
               ),
             ),
-          ),
+          ) : Padding(padding:EdgeInsets.zero),
           if (!isCollapsed)
             Column(
               children: widget.items.map((item) {
@@ -74,6 +74,11 @@ class _NotificationGroupState extends State<NotificationGroup> {
                   fullName: item['full_name'] ?? '',
                   friendId: item['id'] ?? '',
                   user: widget.user,
+                  betAmount: item['bet_amount'] ?? '',
+                  betTitle: item['bet_title'] ?? '',
+                  betDescription: item['bet_description'] ?? '',
+                  betId: item['bet_id'] ?? '',
+                  notificationId: item['notification_id'] ?? '',
                 );
               }).toList(),
             ),
