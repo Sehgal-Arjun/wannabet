@@ -52,167 +52,68 @@ class UserObject {
 class _HomePageState extends State<HomePage> {
   final user = FirebaseAuth.instance.currentUser!;
   int _selectedIndex = 0;
+  List<Map<String, dynamic>> acceptedBetsDetails = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAcceptedBets();
+  }
+
+  Future<void> fetchAcceptedBets() async {
+
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    
+    if (userDoc.exists) {
+      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+      final betsMap = data['bets'] as Map<String, dynamic>?;
+      print('Bets map: $betsMap');
+    
+     
+      
+    
+     
+
+      if (betsMap != null) {
+        for (var entry in betsMap.entries) {
+          String betId = entry.key;
+          String status = entry.value;
+          print('Bet ID: $betId, Status: $status');
+    
+        
+
+          if (status == 'accepted') {
+            DocumentSnapshot betDoc = await FirebaseFirestore.instance.collection('bets').doc(betId).get();
+            if (betDoc.exists) {
+              Map<String, dynamic> betData = betDoc.data() as Map<String, dynamic>;
+
+              List<String> sideOneNames = await fetchMemberNames(betData['side_one_members']);
+              List<String> sideTwoNames = await fetchMemberNames(betData['side_two_members']);
+
+              acceptedBetsDetails.add({
+                'bet_name': betData['bet_name'],
+                'description': betData['description'],
+                'amount': betData['side_one_value'],
+                'side_one_members': sideOneNames,
+                'side_two_members': sideTwoNames,
+                'status': betData['status'],
+              });
+            }
+          }
+        }
+      }
+
+      setState(() {});
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
-
-  Widget _buildStatCard(String title, String value, {Color? valueColor}) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.1),
-              spreadRadius: 1,
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Text(
-              title,
-              style: GoogleFonts.lato(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: GoogleFonts.lato(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: valueColor ?? const Color(0xff5e548e),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickAction(IconData icon, String label, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xff5e548e).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              icon,
-              color: const Color(0xff5e548e),
-              size: 32,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: GoogleFonts.lato(
-              fontSize: 12,
-              color: Colors.grey[800],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActiveBetCard(Map<String, dynamic> bet) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xff5e548e).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.sports_esports,
-              color: Color(0xff5e548e),
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  bet['title'] ?? 'Untitled Bet',
-                  style: GoogleFonts.lato(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  'vs ${bet['opponent']}',
-                  style: GoogleFonts.lato(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '\$${bet['amount']}',
-                style: GoogleFonts.lato(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xff5e548e),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xff5e548e).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  bet['status'] ?? 'Active',
-                  style: GoogleFonts.lato(
-                    fontSize: 12,
-                    color: const Color(0xff5e548e),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  UserObject _buildUserFromData(Map<String, dynamic> userData) {
+       
+UserObject _buildUserFromData(Map<String, dynamic> userData) {
     return UserObject(
       uid: user.uid,
       email: userData['email'],
@@ -228,6 +129,20 @@ class _HomePageState extends State<HomePage> {
       username_lowercase: userData['username_lowercase'],
       friend_requests: List<Map<String, dynamic>>.from(userData['friend_requests'] ?? []),
     );
+}
+
+  void printUserBets(String userId) async {
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+    if (userDoc.exists) {
+      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+
+      var bets = data['bets'];
+
+      print('Bets for user $userId: $bets');
+    } else {
+      print('User with uid $userId does not exist.');
+    }
   }
 
   @override
@@ -272,186 +187,299 @@ class _HomePageState extends State<HomePage> {
             automaticallyImplyLeading: false,
             actions: [
               Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.inbox_outlined),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
-                          future: betInvites,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              return LoadingPage(user: [], selectedIndex: 0, title: 'Loading...');
-                            }
-                            if (snapshot.hasError || !snapshot.hasData) {
-                              return const Center(child: Text('Error loading invites'));
-                            }
-                            return BetInvitesPage(betInvites: snapshot.data!, user: user);
-                          },
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.inbox_outlined),
+                    onPressed: () async {
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
+                            future: betInvites,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                return LoadingPage(user: [], selectedIndex: 0, title: 'Loading...');
+                              }
+                              if (snapshot.hasError || !snapshot.hasData) {
+                                return const Center(child: Text('Error loading invites'));
+                              }
+                              return BetInvitesPage(betInvites: snapshot.data!, user: user);
+                            },
+                          ),
+                        ),
+                      );
+                      
+                      if (result == true) {
+                        setState(() {
+                          acceptedBetsDetails.clear();
+                        });
+                        await fetchAcceptedBets();
+                      }
+                    },
+                  ),
+                  if (betInvites != null)
+                    FutureBuilder<List<Map<String, dynamic>>>(
+                      future: betInvites,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                          return Positioned(
+                            right: 8,
+                            top: 8,
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
+                                      future: betInvites,
+                                      builder: (context, snapshot) {
+                                        if (snapshot.connectionState == ConnectionState.waiting) {
+                                          return LoadingPage(user: [], selectedIndex: 0, title: 'Loading...');
+                                        }
+                                        if (snapshot.hasError || !snapshot.hasData) {
+                                          return const Center(child: Text('Error loading invites'));
+                                        }
+                                        return BetInvitesPage(betInvites: snapshot.data!, user: user);
+                                      },
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(
+                                  '${snapshot.data!.length}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                ],
+              ),
+            ],
+          ),
+          body: acceptedBetsDetails.isEmpty
+              ? Center(child: Text('No accepted bets found'))
+              : ListView.builder(
+                  padding: EdgeInsets.all(16.0),
+                  itemCount: acceptedBetsDetails.length,
+                  itemBuilder: (context, index) {
+                    final bet = acceptedBetsDetails[index];
+                    return Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: EdgeInsets.symmetric(vertical: 8.0),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: Colors.white,
+                          border: Border.all(
+                            color: const Color(0xff5e548e),
+                            width: 2,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      bet['bet_name'] ?? 'Unnamed Bet',
+                                      style: GoogleFonts.lato(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                        color: const Color(0xff5e548e),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: (bet['status'] == 'in_progress' || bet['status'] == 'accepted')
+                                          ? Colors.green.withOpacity(0.2)
+                                          : Colors.grey.withOpacity(0.2),
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: 8,
+                                          height: 8,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: (bet['status'] == 'in_progress' || bet['status'] == 'accepted')
+                                                ? Colors.green
+                                                : Colors.grey,
+                                          ),
+                                        ),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          bet['status'] == 'in_progress'
+                                              ? 'ACTIVE'
+                                              : bet['status'] == 'accepted'
+                                                  ? 'ACCEPTED'
+                                                  : bet['status']?.toUpperCase() ?? '',
+                                          style: GoogleFonts.lato(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: (bet['status'] == 'in_progress' || bet['status'] == 'accepted')
+                                                ? Colors.green
+                                                : Colors.grey,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 12.0),
+                              Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.symmetric(vertical: 16.0),
+                                margin: EdgeInsets.symmetric(vertical: 12.0),
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0xff5e548e),
+                                      const Color(0xff5e548e).withOpacity(0.8),
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xff5e548e).withOpacity(0.3),
+                                      spreadRadius: 1,
+                                      blurRadius: 4,
+                                      offset: Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    '\$${bet['amount'] ?? 0}',
+                                    style: GoogleFonts.lato(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                bet['description'] ?? 'No description',
+                                style: GoogleFonts.lato(
+                                  fontSize: 16,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              SizedBox(height: 20.0),
+                              Container(
+                                padding: EdgeInsets.symmetric(vertical: 16.0),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xff5e548e).withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Expanded(
+                                      flex: 2,
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            'TEAM 1',
+                                            style: GoogleFonts.lato(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xff5e548e),
+                                            ),
+                                          ),
+                                          SizedBox(height: 8),
+                                          Text(
+                                            bet['side_one_members'].join('\n'),
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.lato(
+                                              fontSize: 16,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Column(
+                                        children: [
+                                          Container(
+                                            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xff5e548e),
+                                              borderRadius: BorderRadius.circular(20),
+                                            ),
+                                            child: Text(
+                                              'VS',
+                                              style: GoogleFonts.lato(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    Expanded(
+                                      flex: 2,
+                                      child: Column(
+                                        children: [
+                                          Text(
+                                            'TEAM 2',
+                                            style: GoogleFonts.lato(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: const Color(0xff5e548e),
+                                            ),
+                                          ),
+                                          SizedBox(height: 8),
+                                          Text(
+                                            bet['side_two_members'].join('\n'),
+                                            textAlign: TextAlign.center,
+                                            style: GoogleFonts.lato(
+                                              fontSize: 16,
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     );
                   },
                 ),
-                if (betInvites != null)
-                  FutureBuilder<List<Map<String, dynamic>>>(
-                    future: betInvites,
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                      return Positioned(
-                        right: 8,
-                        top: 8,
-                        child: GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
-                                future: betInvites,
-                                builder: (context, snapshot) {
-                                  if (snapshot.connectionState == ConnectionState.waiting) {
-                                    return LoadingPage(user: [], selectedIndex: 0, title: 'Loading...');
-                                  }
-                                  if (snapshot.hasError || !snapshot.hasData) {
-                                    return const Center(child: Text('Error loading invites'));
-                                  }
-                                  return BetInvitesPage(betInvites: snapshot.data!, user: user);
-                                },
-                              ),
-                            ),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                          '${snapshot.data!.length}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          ),
-                        ),
-                        ),
-                      );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
-          body: RefreshIndicator(
-            onRefresh: () async {
-              setState(() {});
-            },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Stats Summary
-                    Row(
-                      children: [
-                        _buildStatCard('Active Bets', '5'),
-                        const SizedBox(width: 12),
-                        _buildStatCard('Balance', '\$420', valueColor: Colors.green),
-                      ],
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Quick Actions
-                    Text(
-                      'Quick Actions',
-                      style: GoogleFonts.lato(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        _buildQuickAction(
-                          Icons.add_circle_outline,
-                          'New Bet',
-                          () => Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => NewBetPage(user: user)),
-                          ),
-                        ),
-                        _buildQuickAction(
-                          Icons.people_outline,
-                          'Challenge',
-                          () {
-                            // Navigate to challenge friend
-                          },
-                        ),
-                        _buildQuickAction(
-                          Icons.history,
-                          'History',
-                          () {
-                            // Navigate to history
-                          },
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Active Bets
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Active Bets',
-                          style: GoogleFonts.lato(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            // Navigate to all bets
-                          },
-                          child: Text(
-                            'See All',
-                            style: GoogleFonts.lato(
-                              color: const Color(0xff5e548e),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    // Example active bets - replace with StreamBuilder for real data
-                    _buildActiveBetCard({
-                      'title': 'Basketball Game',
-                      'opponent': 'John Doe',
-                      'amount': '50',
-                      'status': 'Active',
-                    }),
-                    _buildActiveBetCard({
-                      'title': 'Running Race',
-                      'opponent': 'Jane Smith',
-                      'amount': '100',
-                      'status': 'Pending',
-                    }),
-                  ],
-                ),
-              ),
-            ),
-          ),
           bottomNavigationBar: NavBar(
             selectedIndex: _selectedIndex,
             onItemTapped: _onItemTapped,
@@ -466,5 +494,17 @@ class _HomePageState extends State<HomePage> {
         );
       }
     );
+  }
+
+  Future<List<String>> fetchMemberNames(List<dynamic> memberUids) async {
+    List<String> memberNames = [];
+    for (String uid in memberUids) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (userDoc.exists) {
+        Map<String, dynamic> userData = userDoc.data() as Map<String, dynamic>;
+        memberNames.add(userData['full_name'] ?? 'Unknown User');
+      }
+    }
+    return memberNames;
   }
 }
