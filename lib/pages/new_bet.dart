@@ -88,17 +88,15 @@ class _NewBetPageState extends State<NewBetPage> {
       }
 
       final betDoc = FirebaseFirestore.instance.collection('bets').doc();
-
-      final sideTwoMembers = {for (var id in selectedFriendIds) id: 'pending'};
       
       final betData = {
         'bet_name': titleController.text,
         'status': 'pending',
         'id': betDoc.id,
-        'side_one_members': {widget.user.uid: 'pending'},
+        'side_one_members': [widget.user.uid],
         'side_one_name': "Side one Wins",
         'side_one_value': amountController.text, 
-        'side_two_members': sideTwoMembers,
+        'side_two_members': selectedFriendIds,
         'side_two_name': "Side two Wins",
         'side_two_value': amountController.text,
         'winning_side': "",
