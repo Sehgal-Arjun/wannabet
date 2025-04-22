@@ -112,7 +112,14 @@ class _NewBetPageState extends State<NewBetPage> {
 
       await betDoc.set(betData);
 
-      
+     
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.user.uid)
+          .update({
+        'bets.${betDoc.id}': 'accepted',
+      });
+
       for (String friendId in selectedFriendIds) {
         await FirebaseFirestore.instance
           .collection('users')
