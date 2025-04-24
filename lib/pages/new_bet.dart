@@ -7,10 +7,14 @@ import 'package:wannabet/pages/home.dart';
 import 'package:wannabet/pages/stats.dart';
 import 'package:wannabet/pages/social.dart';
 import 'package:wannabet/pages/profile.dart';
+import 'package:hive/hive.dart';
+import 'package:wannabet/models/user_model.dart';
+import 'package:wannabet/utils/user_loader.dart';
+import 'package:wannabet/widgets/loading_page.dart';
 
 class NewBetPage extends StatefulWidget {
-  final user;
-  const NewBetPage({super.key, required this.user});
+  // final user;
+  const NewBetPage({super.key});
 
   @override
   State<NewBetPage> createState() => _NewBetPageState();
@@ -19,7 +23,8 @@ class NewBetPage extends StatefulWidget {
 class _NewBetPageState extends State<NewBetPage> {
   List<String> selectedFriendIds = [];
   List<Map<String, dynamic>> friends = [];
-  bool isLoading = true;
+  bool userLoading = true;
+  bool userHasFriends = false;
   final titleController = TextEditingController();
   final descriptionController = TextEditingController();
   final amountController = TextEditingController();
@@ -33,52 +38,34 @@ class _NewBetPageState extends State<NewBetPage> {
     });
   }
 
+  late UserObject user;
+
   @override
   void initState() {
     super.initState();
-    loadFriends();
-  }
+    initUserWithState(
+      state: this,
+      onLoadingStart: () => userLoading = true,
+      onUserLoaded: (loadedUser) async {
+        user = loadedUser;
+        userLoading = false;
+        userHasFriends = user.friends.isNotEmpty;
 
-  Future<void> loadFriends() async {
-    try {
-     
-      var userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(widget.user.uid)
-        .get();
-      
-      List<String> friendIds = List<String>.from(userDoc.data()?['friends'] ?? []);
-      
-      if (friendIds.isNotEmpty) {
-       
-        var friendDocs = await Future.wait(
-          friendIds.map((friendId) => 
-            FirebaseFirestore.instance
-              .collection('users')
-              .doc(friendId)
-              .get()
-          )
+        // Fetch friend info once user is loaded
+        friends = await Future.wait(
+          user.friends.map((id) async {
+            final doc = await FirebaseFirestore.instance.collection('users').doc(id).get();
+            return {
+              'username': doc['username'],
+              'profile_picture': doc['profile_picture'] ?? 'http://www.gravatar.com/avatar/?d=mp',
+              'id': doc.id,
+            };
+          }),
         );
 
-        setState(() {
-          friends = friendDocs.map((doc) => {
-            'id': doc.id,
-            'username': doc.data()?['username'] ?? 'Unknown',
-            'profile_picture': doc.data()?['profile_picture'] ?? 'http://www.gravatar.com/avatar/?d=mp',
-          }).toList();
-          isLoading = false;
-        });
-      } else {
-        setState(() {
-          isLoading = false;
-        });
-      }
-    } catch (e) {
-      print("Error loading friends: $e");
-    setState(() {
-        isLoading = false;
-      });
-    }
+        setState(() {});
+      },
+    );
   }
 
   Future<void> createBet() async {
@@ -93,7 +80,7 @@ class _NewBetPageState extends State<NewBetPage> {
         'bet_name': titleController.text,
         'status': 'pending',
         'id': betDoc.id,
-        'side_one_members': [widget.user.uid],
+        'side_one_members': [user.uid],
         'side_one_name': "Side one Wins",
         'side_one_value': amountController.text, 
         'side_two_members': selectedFriendIds,
@@ -101,25 +88,26 @@ class _NewBetPageState extends State<NewBetPage> {
         'side_two_value': amountController.text,
         'winning_side': "",
         'created_at': FieldValue.serverTimestamp(),
-        'creator': widget.user.uid,
-        'creator_username': widget.user.username,
+        'creator': user.uid,
+        'creator_username': user.username,
         'description': descriptionController.text,
         'user_statuses': {
-          widget.user.uid: 'accepted',
+          user.uid: 'accepted',
           ...{for (var id in selectedFriendIds) id: 'pending'},
         },
       };
 
       await betDoc.set(betData);
-
      
+      // add the bet to the user's list of bets as "accepted"
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(widget.user.uid)
+          .doc(user.uid)
           .update({
         'bets.${betDoc.id}': 'accepted',
       });
 
+      // Notify each selected friend
       for (String friendId in selectedFriendIds) {
         await FirebaseFirestore.instance
           .collection('users')
@@ -128,17 +116,32 @@ class _NewBetPageState extends State<NewBetPage> {
           .add({
             'type': 'bet_invite',
             'bet_id': betDoc.id,
-            'from_user_id': widget.user.uid,
-            'from_username': widget.user.username,
+            'from_user_id': user.uid,
+            'from_username': user.username,
             'title': titleController.text,
             'amount': double.parse(amountController.text),
             'created_at': FieldValue.serverTimestamp(),
             'read': false,
             'side': 'two',
-            'from_full_name': widget.user.full_name,
+            'from_full_name': user.full_name,
             'individual_stake': double.parse(amountController.text) / selectedFriendIds.length,
-            'from_profile_picture': widget.user.profile_picture,
+            'from_profile_picture': user.profile_picture,
           });
+      }
+
+      // Update the cached user in Hive
+      final box = Hive.box<UserObject>('userBox');
+      final cachedUser = box.get('user');
+
+      if (cachedUser != null) {
+        final updatedBets = Map<String, String>.from(cachedUser.bets)
+          ..[betDoc.id] = "accepted";
+
+        final updatedUser = cachedUser.copyWith(
+          bets: updatedBets,
+        );
+
+        await box.put('user', updatedUser);
       }
 
       if (mounted) {
@@ -471,6 +474,9 @@ class _NewBetPageState extends State<NewBetPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!Hive.isBoxOpen('userBox') || Hive.box<UserObject>('userBox').get('user') == null || userLoading) {
+      return LoadingPage(selectedIndex: _selectedIndex, title: 'Profile');
+    }
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -494,8 +500,8 @@ class _NewBetPageState extends State<NewBetPage> {
           ),
         ],
       ),
-      body: isLoading ? const Center(child: CircularProgressIndicator())
-      : friends.isEmpty ? Center (
+      body: userLoading ? const Center(child: CircularProgressIndicator())
+      : !userHasFriends ? Center (
         child: Text(
           'No friends yet',
           style: GoogleFonts.lato(fontSize: 16),
@@ -534,10 +540,10 @@ class _NewBetPageState extends State<NewBetPage> {
         onItemTapped: _onItemTapped,
         pages: [
           HomePage(),
-          StatsPage(user: widget.user),
-          NewBetPage(user: widget.user),
-          SocialPage(user: widget.user),
-          ProfilePage(user: widget.user),
+          StatsPage(),
+          NewBetPage(),
+          SocialPage(),
+          ProfilePage(),
         ],
       ),
     );

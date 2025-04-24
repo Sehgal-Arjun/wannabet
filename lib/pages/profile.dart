@@ -15,20 +15,37 @@ import 'package:wannabet/widgets/profile_picture.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
+import 'package:hive/hive.dart';
+import 'package:wannabet/models/user_model.dart';
+import 'package:wannabet/utils/user_loader.dart';
+import 'package:wannabet/widgets/loading_page.dart';
 
 class ProfilePage extends StatefulWidget {
-  final user;
-  ProfilePage({super.key, required this.user});
+  const ProfilePage({super.key});
 
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  get user => widget.user;
-
   int _selectedIndex = 4;
   final ImagePicker _picker = ImagePicker();
+
+  late UserObject user;
+  bool userLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    initUserWithState(
+      state: this,
+      onLoadingStart: () => userLoading = true,
+      onUserLoaded: (loadedUser) {
+        user = loadedUser;
+        userLoading = false;
+      },
+    );
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -55,6 +72,16 @@ class _ProfilePageState extends State<ProfilePage> {
             .update({
           'profile_picture': downloadURL,
         });
+
+        // Update the cached user in Hive
+        final box = Hive.box<UserObject>('userBox');
+        final cachedUser = box.get('user');
+        if (cachedUser != null) {
+          final updatedUser = cachedUser.copyWith(
+            profile_picture: downloadURL,
+          );
+          box.put('user', updatedUser);
+        }
 
         setState(() {});
       } catch (e) {
@@ -88,6 +115,9 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!Hive.isBoxOpen('userBox') || Hive.box<UserObject>('userBox').get('user') == null || userLoading) {
+      return LoadingPage(selectedIndex: _selectedIndex, title: 'Profile');
+    }
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false,
@@ -97,7 +127,7 @@ class _ProfilePageState extends State<ProfilePage> {
             icon: const Icon(Icons.settings),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) {
-                return SettingsPage(user: user);
+                return SettingsPage();
               }));
             },
             color: Colors.black,
@@ -166,14 +196,14 @@ class _ProfilePageState extends State<ProfilePage> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => FriendsListPage(user: user),
+                        builder: (context) => FriendsListPage(),
                       ),
                     );
                   }
                 ),
                   _buildStatColumn(
                   'Win Rate', 
-                  "${user.total_bets > 0 ? ((user.wonBets / user.total_bets) * 100).toStringAsFixed(1) : '0'}%",
+                  "95%",
                   () {} // onClick here if needed
                   ),
                   _buildStatColumn(
@@ -289,10 +319,10 @@ class _ProfilePageState extends State<ProfilePage> {
         onItemTapped: _onItemTapped,
         pages: [
           HomePage(),
-          StatsPage(user: user),
-          NewBetPage(user: user),
-          SocialPage(user: user),
-          ProfilePage(user: user),
+          StatsPage(),
+          NewBetPage(),
+          SocialPage(),
+          ProfilePage(),
         ],
       ),
     );

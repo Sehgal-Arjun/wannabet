@@ -6,7 +6,6 @@ class ProfilePicture extends StatelessWidget {
   final bool? searched;
   final bool? profile;
   final String? accountId;
-  final user;
 
   const ProfilePicture({
     super.key,
@@ -14,7 +13,6 @@ class ProfilePicture extends StatelessWidget {
     this.searched,
     this.profile,
     this.accountId,
-    this.user
   });
 
   @override
@@ -31,7 +29,7 @@ class ProfilePicture extends StatelessWidget {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ViewProfile(user: user, uid: accountId!)
+                  builder: (context) => ViewProfile(uid: accountId!)
                 ),
               );
           }

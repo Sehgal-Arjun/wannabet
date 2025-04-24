@@ -7,15 +7,15 @@ import 'package:wannabet/pages/stats.dart';
 import 'package:wannabet/widgets/navbar.dart';
 
 class LoadingPage extends StatefulWidget {
-  final user;
   int selectedIndex;
   final String title;
+  final showNavBar;
 
   LoadingPage({
     super.key,
     required this.selectedIndex,
     required this.title,
-    required this.user,
+    this.showNavBar = true,
     });
 
   @override
@@ -23,7 +23,6 @@ class LoadingPage extends StatefulWidget {
 }
 
 class _LoadingPageState extends State<LoadingPage> {
-  get user => widget.user;
 
   void _onItemTapped(int index) {
       setState(() {
@@ -36,17 +35,19 @@ class _LoadingPageState extends State<LoadingPage> {
     return Scaffold(
       appBar: AppBar(title: Text(widget.title)),
       body: const Center(child: CircularProgressIndicator()),
-      bottomNavigationBar: NavBar(
-        selectedIndex: widget.selectedIndex,
-        onItemTapped: _onItemTapped,
-        pages: [
-          HomePage(),
-          StatsPage(user: user),
-          NewBetPage(user: user),
-          SocialPage(user: user),
-          ProfilePage(user: user),
-        ],
-      ),
+      bottomNavigationBar: widget.showNavBar
+          ? NavBar(
+          selectedIndex: widget.selectedIndex,
+          onItemTapped: _onItemTapped,
+          pages: [
+            HomePage(),
+            StatsPage(),
+            NewBetPage(),
+            SocialPage(),
+            ProfilePage(),
+          ],
+        )
+          : null,
     );
   }
 }

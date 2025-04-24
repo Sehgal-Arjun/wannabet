@@ -6,17 +6,37 @@ import 'package:wannabet/widgets/bet_list.dart';
 import 'package:wannabet/widgets/custom_card.dart';
 import 'package:wannabet/widgets/loading_page.dart';
 import 'package:wannabet/widgets/profile_picture.dart';
+import 'package:hive/hive.dart';
+import 'package:wannabet/models/user_model.dart';
+import 'package:wannabet/utils/user_loader.dart';
+import 'package:wannabet/widgets/loading_page.dart';
 
 class ViewProfile extends StatefulWidget {
   final String uid;
-  final user;
-  const ViewProfile({super.key, required this.uid, required this.user});
+  const ViewProfile({super.key, required this.uid});
 
   @override
   State<ViewProfile> createState() => _ViewProfileState();
 }
 
 class _ViewProfileState extends State<ViewProfile> {
+
+  late UserObject user;
+  bool userLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    initUserWithState(
+      state: this,
+      onLoadingStart: () => userLoading = true,
+      onUserLoaded: (loadedUser) {
+        user = loadedUser;
+        userLoading = false;
+      },
+    );
+  }
+
   Future<DocumentSnapshot?> fetchUserProfile() async {
     try {
       var userDoc = await FirebaseFirestore.instance
@@ -35,26 +55,29 @@ class _ViewProfileState extends State<ViewProfile> {
 
   @override
   Widget build(BuildContext context) {
+    if (!Hive.isBoxOpen('userBox') || Hive.box<UserObject>('userBox').get('user') == null || userLoading) {
+      return LoadingPage(selectedIndex: 3, title: 'Profile', showNavBar: false);
+    }
     return FutureBuilder<DocumentSnapshot?>(
       future: fetchUserProfile(),
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data == null) {
-          return LoadingPage(user: [], selectedIndex: 0, title: 'Social');
+          return LoadingPage(selectedIndex: 0, title: 'Social');
         }
 
         var account = snapshot.data!;
 
-        bool alreadyFriends = account["friends"].contains(widget.user.uid);
+        bool alreadyFriends = account["friends"].contains(user.uid);
         bool friendRequestSent = false;
         for (var request in account["friend_requests"]) {
-          if (request["uid"] == widget.user.uid) {
+          if (request["uid"] == user.uid) {
             friendRequestSent = true;
             break;
           }
         }
 
         bool friendRequestReceived = false;
-        for (var request in widget.user.friend_requests) {
+        for (var request in user.friend_requests) {
           if (request["uid"] == account["id"]) {
             friendRequestSent = true;
             break;
@@ -84,7 +107,7 @@ class _ViewProfileState extends State<ViewProfile> {
 
         Future sendFriendRequest() async {
           try {
-            var currentUser = widget.user;
+            var currentUser = user;
             var friendId = account.id;
 
             // Check if the user is already friends with the account
@@ -93,7 +116,7 @@ class _ViewProfileState extends State<ViewProfile> {
             }
 
             // Check if the user has already received a friend request
-            if (currentUser.friend_requests.contains(friendId)) {
+            if (currentUser.friend_requests.any((request) => request["uid"] == friendId)) {
               return;
             }
             // Check if the account has already received a friend request from the current user
@@ -126,6 +149,26 @@ class _ViewProfileState extends State<ViewProfile> {
                 }
               ]),
             });
+
+            // Update the cached user in Hive
+            final box = Hive.box<UserObject>('userBox');
+            final cachedUser = box.get('user');
+
+            if (cachedUser != null) {
+              final updatedSentRequests = List<Map<String, dynamic>>.from(cachedUser.sent_friend_requests)
+                ..add({
+                  "uid": friendId,
+                  "profile_picture": account["profile_picture"],
+                  "full_name": account["full_name"],
+                  "username": account["username"],
+                });
+
+              final updatedUser = cachedUser.copyWith(
+                sent_friend_requests: updatedSentRequests,
+              );
+
+              await box.put('user', updatedUser);
+            }
 
             // play sent friend request animation
             showDialog(

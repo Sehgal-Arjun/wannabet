@@ -4,12 +4,21 @@ import 'package:wannabet/intro.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:wannabet/models/user_model.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  await Hive.initFlutter();
+  Hive.registerAdapter(UserObjectAdapter());
+  await Hive.openBox<UserObject>('userBox');
+
   runApp(const MainApp());
 }
 
