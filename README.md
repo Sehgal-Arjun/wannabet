@@ -14,9 +14,8 @@ A social Flutter app to create, track, and settle friendly bets with your friend
 - 🧑‍🤝‍🧑 **Social Feed**: View friends’ betting activity and engage with their bets
 - 🎯 **Custom Bets**: Create public or private wagers, set stakes, and invite specific friends
 - ✅ **Verified Results**: One user completes a bet, the other verifies the outcome
-- 💸 **Payments & Settlements**: Track payments and automatically optimize payouts (like Splitwise)
+- 💸 **Payments & Settlements**: Track payments and automatically optimize payments by "skipping the middle man"
 - 📈 **Leaderboard**: Rank friends by wins, total earnings, and bet volume
-- 🧠 **Smart Caching**: Uses Hive for local caching to reduce redundant Firebase reads
 - 🖼️ **Personal Profiles**: Customizable profile sections like Pinned Bets and Top Wins
 - 🔔 **Notifications**: Friend requests, bet invites, and status updates in real time
 
