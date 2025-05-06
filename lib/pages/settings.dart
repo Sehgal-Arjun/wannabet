@@ -2,10 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:wannabet/intro.dart';
 import 'package:wannabet/widgets/custom_card.dart';
+import 'package:hive/hive.dart';
+import 'package:wannabet/models/user_model.dart';
+import 'package:wannabet/utils/user_loader.dart';
+import 'package:wannabet/widgets/loading_page.dart';
 
 class SettingsPage extends StatefulWidget {
-  final user;
-  SettingsPage({super.key, required this.user});
+  SettingsPage({super.key});
 
   @override
 
@@ -14,7 +17,22 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  get user => widget.user;
+
+  late UserObject user;
+  bool userLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    initUserWithState(
+      state: this,
+      onLoadingStart: () => userLoading = true,
+      onUserLoaded: (loadedUser) {
+        user = loadedUser;
+        userLoading = false;
+      },
+    );
+  }
 
   void signOut() async{
     try {
@@ -31,6 +49,9 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (!Hive.isBoxOpen('userBox') || Hive.box<UserObject>('userBox').get('user') == null || userLoading) {
+      return LoadingPage(selectedIndex: 4, title: 'Profile', showNavBar: false);
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),

@@ -9,46 +9,14 @@ import 'package:wannabet/pages/new_bet.dart';
 import 'package:wannabet/pages/social.dart';
 import 'package:wannabet/pages/profile.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:hive/hive.dart';
+import 'package:wannabet/models/user_model.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
-}
-
-class UserObject {
-  final String uid;
-  final String? email;
-  final String? profile_picture;
-  final String? first_name;
-  final String? last_name;
-  final String? full_name;
-  final String? username;
-  final List<String> friends;
-  final List<String> pinnedBets;
-  final double total_money_won;
-  final int total_bets;
-  final String? username_lowercase;
-  final List<Map<String, dynamic>> friend_requests;
-  final List<Map<String, dynamic>> sent_friend_requests;
-
-  UserObject({
-    required this.uid,
-    this.email,
-    this.profile_picture,
-    this.first_name,
-    this.last_name,
-    this.full_name,
-    this.username,
-    this.friends = const [],
-    this.pinnedBets = const [],
-    this.total_money_won = 0.0,
-    this.total_bets = 0,
-    this.username_lowercase,
-    this.friend_requests = const [],
-    this.sent_friend_requests = const [],
-  });
 }
 
 class _HomePageState extends State<HomePage> {
@@ -71,18 +39,11 @@ class _HomePageState extends State<HomePage> {
       final betsMap = data['bets'] as Map<String, dynamic>?;
       print('Bets map: $betsMap');
     
-     
-      
-    
-     
-
       if (betsMap != null) {
         for (var entry in betsMap.entries) {
           String betId = entry.key;
           String status = entry.value;
           print('Bet ID: $betId, Status: $status');
-    
-        
 
           if (status == 'accepted') {
             DocumentSnapshot betDoc = await FirebaseFirestore.instance.collection('bets').doc(betId).get();
@@ -131,6 +92,7 @@ UserObject _buildUserFromData(Map<String, dynamic> userData) {
       username_lowercase: userData['username_lowercase'],
       friend_requests: List<Map<String, dynamic>>.from(userData['friend_requests'] ?? []),
       sent_friend_requests: List<Map<String, dynamic>>.from(userData['sent_friend_requests'] ?? []),
+      bets: Map<String, String>.from(userData['bets'] ?? {}),
     );
 }
 
@@ -154,13 +116,18 @@ UserObject _buildUserFromData(Map<String, dynamic> userData) {
       future: FirebaseFirestore.instance.collection('users').doc(user.uid).get(),
       builder: (context, snapshot) {
         if (!snapshot.hasData || !snapshot.data!.exists) {
-          return LoadingPage(user: [], selectedIndex: _selectedIndex, title: 'WannaBet');
+          return LoadingPage(selectedIndex: _selectedIndex, title: 'WannaBet');
         }
 
         var userData = snapshot.data!;
         Map<String, dynamic> data = userData.data() as Map<String, dynamic>;
 
+        // build the user object and cache it
         final user = _buildUserFromData(data);
+        final userBox = Hive.box<UserObject>('userBox');
+        userBox.put('user', user);
+
+        // fetch the user's bet invites from their notification collection
         final betInvites = FirebaseFirestore.instance
           .collection('users')
           .doc(user.uid)
@@ -201,12 +168,12 @@ UserObject _buildUserFromData(Map<String, dynamic> userData) {
                             future: betInvites,
                             builder: (context, snapshot) {
                               if (snapshot.connectionState == ConnectionState.waiting) {
-                                return LoadingPage(user: [], selectedIndex: 0, title: 'Loading...');
+                                return LoadingPage(selectedIndex: 0, title: 'Loading...');
                               }
                               if (snapshot.hasError || !snapshot.hasData) {
                                 return const Center(child: Text('Error loading invites'));
                               }
-                              return BetInvitesPage(betInvites: snapshot.data!, user: user);
+                              return BetInvitesPage(betInvites: snapshot.data!);
                             },
                           ),
                         ),
@@ -220,55 +187,54 @@ UserObject _buildUserFromData(Map<String, dynamic> userData) {
                       }
                     },
                   ),
-                  if (betInvites != null)
-                    FutureBuilder<List<Map<String, dynamic>>>(
-                      future: betInvites,
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                          return Positioned(
-                            right: 8,
-                            top: 8,
-                            child: GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
-                                      future: betInvites,
-                                      builder: (context, snapshot) {
-                                        if (snapshot.connectionState == ConnectionState.waiting) {
-                                          return LoadingPage(user: [], selectedIndex: 0, title: 'Loading...');
-                                        }
-                                        if (snapshot.hasError || !snapshot.hasData) {
-                                          return const Center(child: Text('Error loading invites'));
-                                        }
-                                        return BetInvitesPage(betInvites: snapshot.data!, user: user);
-                                      },
-                                    ),
+                  FutureBuilder<List<Map<String, dynamic>>>(
+                    future: betInvites,
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                        return Positioned(
+                          right: 8,
+                          top: 8,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => FutureBuilder<List<Map<String, dynamic>>>(
+                                    future: betInvites,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                        return LoadingPage(selectedIndex: 0, title: 'Loading...');
+                                      }
+                                      if (snapshot.hasError || !snapshot.hasData) {
+                                        return const Center(child: Text('Error loading invites'));
+                                      }
+                                      return BetInvitesPage(betInvites: snapshot.data!);
+                                    },
                                   ),
-                                );
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.red,
-                                  shape: BoxShape.circle,
                                 ),
-                                child: Text(
-                                  '${snapshot.data!.length}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              );
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Text(
+                                '${snapshot.data!.length}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                 ],
               ),
             ],
@@ -488,10 +454,10 @@ UserObject _buildUserFromData(Map<String, dynamic> userData) {
             onItemTapped: _onItemTapped,
             pages: [
               HomePage(),
-              StatsPage(user: user),
-              NewBetPage(user: user),
-              SocialPage(user: user),
-              ProfilePage(user: user),
+              StatsPage(),
+              NewBetPage(),
+              SocialPage(),
+              ProfilePage(),
             ],
           ),
         );

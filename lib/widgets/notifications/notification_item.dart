@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:wannabet/pages/view_profile.dart';
+import 'package:hive/hive.dart';
+import 'package:wannabet/models/user_model.dart';
+import 'package:wannabet/utils/user_loader.dart';
+import 'package:wannabet/widgets/loading_page.dart';
 
 class NotificationItem extends StatefulWidget {
   final String action;
@@ -16,8 +20,7 @@ class NotificationItem extends StatefulWidget {
   final String betAmount;
   final String betDescription;
   final String notificationId;
-  var user;
-  NotificationItem({super.key, required this.action, required this.profilePicture, this.commentText = "", required this.username, required this.fullName, required this.friendId, required this.user, this.betId="", this.betTitle="", this.betAmount="", this.betDescription="No description given.", required this.notificationId});
+  NotificationItem({super.key, required this.action, required this.profilePicture, this.commentText = "", required this.username, required this.fullName, required this.friendId, this.betId="", this.betTitle="", this.betAmount="", this.betDescription="No description given.", required this.notificationId});
   
 
   @override
@@ -26,12 +29,28 @@ class NotificationItem extends StatefulWidget {
 
 class _NotificationItemState extends State<NotificationItem> {
 
+  late UserObject user;
+  bool userLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    initUserWithState(
+      state: this,
+      onLoadingStart: () => userLoading = true,
+      onUserLoaded: (loadedUser) {
+        user = loadedUser;
+        userLoading = false;
+      },
+    );
+  }
+
   Future acceptFriendRequest(friendId) async {
     try {
       // Add friend to current user's friend list
       await FirebaseFirestore.instance
         .collection('users')
-        .doc(widget.user.uid)
+        .doc(user.uid)
         .update({
           'friends': FieldValue.arrayUnion([friendId])
         });
@@ -41,9 +60,33 @@ class _NotificationItemState extends State<NotificationItem> {
         .collection('users')
         .doc(friendId)
         .update({
-          'friends': FieldValue.arrayUnion([widget.user.uid])
+          'friends': FieldValue.arrayUnion([user.uid])
         });
 
+      // Remove friend request from current user's friend requests
+      removeFriendRequest(friendId, false);
+
+      // Update the cached user in Hive
+      final box = Hive.box<UserObject>('userBox');
+      final cachedUser = box.get('user');
+
+      if (cachedUser != null) {
+        final updatedFriends = List<String>.from(cachedUser.friends)
+          ..add(friendId);
+
+        final updatedUser = cachedUser.copyWith(
+          friends: updatedFriends,
+        );
+
+        await box.put('user', updatedUser);
+      }
+    } catch (e) {
+      print("Error accepting friend request: $e");
+    }
+  }
+
+  Future removeFriendRequest(friendId, declined) async {
+    try {
       // Remove current user from friend's sent friend requests
       var sentFriendRequests = await FirebaseFirestore.instance
         .collection('users')
@@ -51,7 +94,7 @@ class _NotificationItemState extends State<NotificationItem> {
         .get()
         .then((doc) => List<Map<String, dynamic>>.from(doc.data()?['sent_friend_requests'] ?? []));
 
-      var updatedSentFriendRequests = sentFriendRequests.where((request) => request['uid'] != widget.user.uid).toList();
+      var updatedSentFriendRequests = sentFriendRequests.where((request) => request['uid'] != user.uid).toList();
 
       await FirebaseFirestore.instance
         .collection('users')
@@ -61,25 +104,26 @@ class _NotificationItemState extends State<NotificationItem> {
         });
 
       // Remove friend request from current user's friend requests
-      removeFriendRequest(friendId, false);
-    } catch (e) {
-      print("Error accepting friend request: $e");
-    }
-  }
-
-  Future removeFriendRequest(friendId, declined) async {
-    try {
-      // Remove friend request from current user's friend requests
-      var friendRequests = widget.user.friend_requests ?? [];
+      var friendRequests = user.friend_requests ?? [];
       var updatedFriendRequests = friendRequests.where((request) => request['uid'] != friendId).toList();
 
       await FirebaseFirestore.instance
         .collection('users')
-        .doc(widget.user.uid)
+        .doc(user.uid)
         .update({
           'friend_requests': updatedFriendRequests
         });
 
+      // Update the cached user in Hive
+      final box = Hive.box<UserObject>('userBox');
+      final cachedUser = box.get('user');
+
+      if (cachedUser != null) {
+        final updatedUser = cachedUser.copyWith(
+          friend_requests: updatedFriendRequests,
+        );
+        await box.put('user', updatedUser);
+      }
     } catch (e) {
       print("Error removing friend request: $e");
     }
@@ -88,12 +132,12 @@ class _NotificationItemState extends State<NotificationItem> {
   Future cancelFriendRequest(friendId, declined) async {
     try {
       // Remove friend request from current user's sent friend requests
-      var sentFriendRequests = widget.user.sent_friend_requests ?? [];
+      var sentFriendRequests = user.sent_friend_requests ?? [];
       var updatedSentFriendRequests = sentFriendRequests.where((request) => request['uid'] != friendId).toList();
 
       await FirebaseFirestore.instance
         .collection('users')
-        .doc(widget.user.uid)
+        .doc(user.uid)
         .update({
           'sent_friend_requests': updatedSentFriendRequests
         });
@@ -104,7 +148,7 @@ class _NotificationItemState extends State<NotificationItem> {
         .doc(friendId)
         .get()
         .then((doc) => List<Map<String, dynamic>>.from(doc.data()?['friend_requests'] ?? []));
-      var updatedFriendRequests = friendRequests.where((request) => request['uid'] != widget.user.uid).toList();
+      var updatedFriendRequests = friendRequests.where((request) => request['uid'] != user.uid).toList();
 
       await FirebaseFirestore.instance
         .collection('users')
@@ -113,6 +157,18 @@ class _NotificationItemState extends State<NotificationItem> {
           'friend_requests': updatedFriendRequests
         });
 
+      // Update the cached user in Hive
+      final box = Hive.box<UserObject>('userBox');
+      final cachedUser = box.get('user');
+
+      if (cachedUser != null) {
+        final updatedUser = cachedUser.copyWith(
+          sent_friend_requests: updatedSentFriendRequests,
+        );
+        await box.put('user', updatedUser);
+      }
+
+      setState(() {});
     } catch (e) {
       print("Error canceling friend request: $e");
     }
@@ -168,7 +224,7 @@ class _NotificationItemState extends State<NotificationItem> {
     // Add bet to current user's bets
     await FirebaseFirestore.instance
       .collection('users')
-      .doc(widget.user.uid)
+      .doc(user.uid)
       .update({
         'bets.${widget.betId}': 'accepted'
       });
@@ -176,7 +232,7 @@ class _NotificationItemState extends State<NotificationItem> {
     // Remove bet invite from current user's bet invites
     await FirebaseFirestore.instance
       .collection('users')
-      .doc(widget.user.uid)
+      .doc(user.uid)
       .collection('notifications')
       .doc(widget.notificationId)
       .delete();
@@ -186,17 +242,32 @@ class _NotificationItemState extends State<NotificationItem> {
       .collection('bets')
       .doc(widget.betId)
       .update({
-        'user_statuses.${widget.user.uid}': 'accepted'
+        'user_statuses.${user.uid}': 'accepted'
       });
     
     checkAndUpdateBetStatus();
+
+    // Update the cached user in Hive
+    final box = Hive.box<UserObject>('userBox');
+    final cachedUser = box.get('user');
+
+    if (cachedUser != null) {
+      final updatedBets = Map<String, String>.from(cachedUser.bets)
+        ..[widget.betId] = "accepted";
+
+      final updatedUser = cachedUser.copyWith(
+        bets: updatedBets,
+      );
+
+      await box.put('user', updatedUser);
+    }
   }
 
   void denyBetInvite() async {
     // Remove bet invite from current user's bet invites
     await FirebaseFirestore.instance
       .collection('users')
-      .doc(widget.user.uid)
+      .doc(user.uid)
       .update({
         'bet_invites': FieldValue.arrayRemove([widget.betId])
       });
@@ -204,7 +275,7 @@ class _NotificationItemState extends State<NotificationItem> {
     // Remove bet invite from current user's bet invites
     await FirebaseFirestore.instance
       .collection('users')
-      .doc(widget.user.uid)
+      .doc(user.uid)
       .collection('notifications')
       .doc(widget.notificationId)
       .delete();
@@ -214,10 +285,25 @@ class _NotificationItemState extends State<NotificationItem> {
       .collection('bets')
       .doc(widget.betId)
       .update({
-        'user_statuses.${widget.user.uid}': 'denied'
+        'user_statuses.${user.uid}': 'denied'
       });
 
     checkAndUpdateBetStatus();
+
+    // Update the cached user in Hive
+    final box = Hive.box<UserObject>('userBox');
+    final cachedUser = box.get('user');
+
+    if (cachedUser != null) {
+      final updatedBets = Map<String, String>.from(cachedUser.bets)
+        ..remove(widget.betId);
+
+      final updatedUser = cachedUser.copyWith(
+        bets: updatedBets,
+      );
+
+      await box.put('user', updatedUser);
+    }
   }
 
   bool isAccepted = false;
@@ -578,7 +664,7 @@ class _NotificationItemState extends State<NotificationItem> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => ViewProfile(uid: widget.friendId, user: widget.user),
+                  builder: (context) => ViewProfile(uid: widget.friendId),
                 ),
               );
             }

@@ -73,7 +73,6 @@ class _NotificationGroupState extends State<NotificationGroup> {
                   username: item['username'] ?? '',
                   fullName: item['full_name'] ?? '',
                   friendId: item['id'] ?? '',
-                  user: widget.user,
                   betAmount: item['bet_amount'] ?? '',
                   betTitle: item['bet_title'] ?? '',
                   betDescription: item['bet_description'] ?? '',
